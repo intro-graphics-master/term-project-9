@@ -9,6 +9,105 @@ const { Cube, Subdivision_Sphere, Transforms_Sandbox_Base } = defs;
 
 // (Can define Main_Scene's class here)
 
+class physics_component
+{
+   constructor(mass, shape, time_dilation=1000)
+   {
+    this.accleration =  Vec.of( 0,0,0 );
+    this.velocity = Vec.of(0,0,0);
+    this.position = Vec.of(0,0,0);
+
+    this.transforms = Mat4.identity();
+
+    this.rotation = Vec.of(0,0,0);
+    this.mass = mass;
+    this.g = -9.8/time_dilation;
+
+    this.surface_friction_constatn = 0.5;
+    this.time_dilation = time_dilation;
+
+    this.gravity_enabled = false;
+    this.physics_enabled = false;
+    this.collision_enabled = false;
+    this.visible = true;
+
+    if(shape == "cube")
+      this.object_type  = new Cube();
+    else if (shape = "sphere")
+      this.object_type = new Subdivision_Sphere( 4 );
+
+      console.log(shape);
+    
+
+   }
+
+    apply_impulse(impulse)
+    {
+      for( var i = 0; i < 3; i ++)
+        impulse[i] = impulse[i]/this.time_dilation;
+      
+      this.velocity  = this.velocity.plus(Vec.of(impulse[0]/this.mass, impulse[1]/this.mass,impulse[2]/this.mass));
+      console.log(this.velocity);
+    }
+
+    check_collision_sphere()
+    {
+      return true;
+    }
+
+    update_acceration_override(accleration)
+    {
+      this.accleration = accleration;
+    }
+
+    update_velocity_override(velocity)
+    {
+      this.velocity = velocity;
+
+    }
+    update_position_override(position)
+    {
+      this.position = position;
+    }
+
+    compute_next()
+    {
+       if (this.gravity_enabled)
+        this.accleration = this.accleration.plus(Vec.of(0,this.g,0));
+       this.velocity = this.velocity.plus(this.accleration);
+        
+       this.position = this.position.plus(this.velocity);
+       this.accleration = Vec.of(0,0,0);
+    }
+
+
+
+
+
+
+    update_transform(){
+       this.transforms = Mat4.identity();
+       this.transforms = this.transforms.times(Mat4.translation(this.position));
+       this.transforms = this.transforms.times(Mat4.rotation(this.rotation[0], [1,0,0]));
+       this.transforms = this.transforms.times(Mat4.rotation(this.rotation[1], [0,1,0]));
+       this.transforms = this.transforms.times(Mat4.rotation(this.rotation[2], [0,0,1]));
+    }
+
+    draw(context, program_state, material)
+    {
+      this.update_transform();
+      this.object_type.draw(context, program_state, this.transforms, material);
+      this.compute_next();
+    }
+
+
+
+
+      
+
+}
+
+
 const Main_Scene =
 class Solar_System extends Scene
 {                                             // **Solar_System**:  Your Assingment's Scene.
@@ -22,7 +121,10 @@ class Solar_System extends Scene
                                                 // TODO (#1):  Complete this list with any additional shapes you need.
       this.shapes = { 'box' : new Cube(),
                    'ball_4' : new Subdivision_Sphere( 4 ),
-                     'star' : new Planar_Star() };
+                     'star' : new Planar_Star(),
+                    "cube" : new physics_component(10,"cube"),
+                    "sphere" : new physics_component(10,"sphere")
+                      };
 
                                                         // TODO (#1d): Modify one sphere shape's existing texture 
                                                         // coordinates in place.  Multiply them all by 5.
@@ -67,6 +169,7 @@ class Solar_System extends Scene
                                   // Some setup code that tracks whether the "lights are on" (the stars), and also
                                   // stores 30 random location matrices for drawing stars behind the solar system:
       this.lights_on = false;
+      this.apply_impulse = 0;
       this.star_matrices = [];
       for( let i=0; i<30; i++ )
         this.star_matrices.push( Mat4.rotation( Math.PI/2 * (Math.random()-.5), Vec.of( 0,1,0 ) )
@@ -78,7 +181,7 @@ class Solar_System extends Scene
                                       // buttons with key bindings for affecting this scene, and live info readouts.
 
                                  // TODO (#5b): Add a button control.  Provide a callback that flips the boolean value of "this.lights_on".
-       // this.key_triggered_button( 
+      this.key_triggered_button("apply_impulse", ["l"],  () => {this.apply_impulse += 1;}   );
     }
   display( context, program_state )
     {                                                // display():  Called once per frame of animation.  For each shape that you want to
@@ -190,20 +293,19 @@ class Solar_System extends Scene
       // ***** BEGIN TEST SCENE *****               
                                           // TODO:  Delete (or comment out) the rest of display(), starting here:
 
-      program_state.set_camera( Mat4.translation([ 0,3,-10 ]) );
+      //program_state.set_camera( Mat4.translation([ 0,3,-10 ]) );
       const angle = Math.sin( t );
       const light_position = Mat4.rotation( angle, [ 1,0,0 ] ).times( Vec.of( 0,-1,1,0 ) );
       program_state.lights = [ new Light( light_position, Color.of( 1,1,1,1 ), 1000000 ) ];
       model_transform = Mat4.identity();
-      this.shapes.box.draw( context, program_state, model_transform, this.materials.plastic.override( yellow ) );
-      model_transform.post_multiply( Mat4.translation([ 0, -2, 0 ]) );
-      this.shapes.ball_4.draw( context, program_state, model_transform, this.materials.metal_earth.override( blue ) );
-      model_transform.post_multiply( Mat4.rotation( t, Vec.of( 0,1,0 ) ) )
-      model_transform.post_multiply( Mat4.rotation( 1, Vec.of( 0,0,1 ) )
-                             .times( Mat4.scale      ([ 1,   2, 1 ]) )
-                             .times( Mat4.translation([ 0,-1.5, 0 ]) ) );
-      this.shapes.box.draw( context, program_state, model_transform, this.materials.plastic_stars.override( yellow ) );
-
+      //this.shapes.box.draw( context, program_state, model_transform, this.materials.plastic.override( yellow ) );
+      if(this.apply_impulse > 0)
+      {
+        this.shapes.sphere.apply_impulse(Vec.of(100.0,0.0,0.0));
+        this.apply_impulse -= 1;
+      }
+      this.shapes.sphere.draw(context, program_state, this.materials.plastic.override( yellow ))
+    
       // ***** END TEST SCENE *****
 
       // Warning: Get rid of the test scene, or else the camera position and movement will not work.
