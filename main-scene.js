@@ -1,4 +1,5 @@
 import {tiny, defs} from './assignment-4-resources.js';
+import { Shape_From_File } from './obj-file-demo.js';
                                                                 // Pull these names into this module's scope for convenience:
 const { Vec, Mat, Mat4, Color, Light, Shape, Shader, Material, Texture,
          Scene, Canvas_Widget, Code_Widget, Text_Widget } = tiny;
@@ -18,6 +19,7 @@ class physics_component
     this.position = Vec.of(0,0,0);
 
     this.transforms = Mat4.identity();
+    this.transform_position= Mat4.identity();
 
     this.rotation = Vec.of(0,0,0);
     this.mass = mass;
@@ -35,12 +37,17 @@ class physics_component
 
     if(shape == "cube")
       this.object_type  = new Cube();
-    else if (shape = "sphere")
+
+    else if (shape == "sphere")
       this.object_type = new Subdivision_Sphere( 4 );
 
-      console.log(shape);
+    else if (shape == "mario")
+    {
+      this.object_type = new Shape_From_File( "assets/mario/mario.obj" );
+      this.rotation = Vec.of(0,Math.PI/2.0,0);
+    }
 
-
+      
 
      this.jump_count = 0;
     
@@ -88,6 +95,7 @@ class physics_component
 
        this.velocity = this.velocity.plus(this.accleration);
        var TempVelocity = this.velocity.times(1);
+       // TODO: compute drag 
         
        this.position = this.position.plus(TempVelocity);
        this.accleration = Vec.of(0,0,0);
@@ -110,22 +118,18 @@ class physics_component
             return;
         this.jumpStart = true;
         this.accleration = Vec.of(0,0,0);
-        this.update_velocity_override(Vec.of(0,0.25,0));
+        this.update_velocity_override(Vec.of(0,0.2,0));
     }
-
-
-
-
-    
-
-
 
     update_transform(){
        this.transforms = Mat4.identity();
        this.transforms = this.transforms.times(Mat4.translation(this.position));
+       this.transform_position = this.transforms;
        this.transforms = this.transforms.times(Mat4.rotation(this.rotation[0], [1,0,0]));
        this.transforms = this.transforms.times(Mat4.rotation(this.rotation[1], [0,1,0]));
        this.transforms = this.transforms.times(Mat4.rotation(this.rotation[2], [0,0,1]));
+
+
     }
 
     draw(context, program_state, material)
@@ -133,14 +137,10 @@ class physics_component
       this.update_transform();
       this.object_type.draw(context, program_state, this.transforms, material);
       this.compute_next();
-    }
-
-
-
-
-      
+    }      
 
 }
+
 
 
 const Main_Scene =
@@ -157,8 +157,9 @@ class Solar_System extends Scene
       this.shapes = { 'box' : new Cube(),
                    'ball_4' : new Subdivision_Sphere( 4 ),
                      'star' : new Planar_Star(),
-                    "cube" : new physics_component(10,"cube"),
-                    "sphere" : new physics_component(10,"sphere")
+                    "cube" : new physics_component(10, "cube"),
+                    "sphere" : new physics_component(10, "sphere"),
+                    "mario":  new physics_component(10, "mario")
                       };
 
                                                         // TODO (#1d): Modify one sphere shape's existing texture 
@@ -342,28 +343,37 @@ class Solar_System extends Scene
       // ***** BEGIN TEST SCENE *****               
                                           // TODO:  Delete (or comment out) the rest of display(), starting here:
 
-      //program_state.set_camera( Mat4.translation([ 0,3,-10 ]) );
+      //
       const angle = Math.sin( t );
       const light_position = Mat4.rotation( angle, [ 1,0,0 ] ).times( Vec.of( 0,-1,1,0 ) );
       program_state.lights = [ new Light( light_position, Color.of( 1,1,1,1 ), 1000000 ) ];
       model_transform = Mat4.identity();
-      //this.shapes.box.draw( context, program_state, model_transform, this.materials.plastic.override( yellow ) );
+      // this.shapes.box.draw( context, program_state, model_transform, this.materials.plastic.override( yellow ) );
+
       if(this.apply_impulse > 0)
       {
-        this.shapes.sphere.apply_impulse(Vec.of(100.0,0.0,0.0));
+        this.shapes.mario.apply_impulse(Vec.of(100.0,0.0,0.0));
         this.apply_impulse -= 1;
       }
+      
+      
       if(this.move_right)
-          this.shapes.sphere.update_position_add(Vec.of(0.1,0,0));
+          this.shapes.mario.update_position_add(Vec.of(0.1,0,0));
       if (this.move_left)
-           this.shapes.sphere.update_position_add(Vec.of(-0.1,0,0));
-
+           this.shapes.mario.update_position_add(Vec.of(-0.1,0,0));
+      
       if (this.jump)
       {
-       this.shapes.sphere.jump();
+       this.shapes.mario.jump();
        this.jump -= 1;
       }
-      this.shapes.sphere.draw(context, program_state, this.materials.plastic.override( yellow ));
+
+      var pos = this.shapes.mario.position;
+      var factor = 1;
+     
+      
+      this.shapes.mario.draw(context, program_state, this.materials.plastic.override( yellow ));
+      program_state.set_camera( Mat4.inverse(this.shapes.mario.transform_position.times(Mat4.translation([ 0,0, 20]))) );
 
       
     
