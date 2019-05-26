@@ -23,7 +23,7 @@ class physics_component
     this.mass = mass;
     this.g = -9.8/time_dilation;
 
-    this.surface_friction_constatn = 0.5;
+    this.surface_friction_constant = 0.5;
     this.time_dilation = time_dilation;
 
     this.gravity_enabled = false;
@@ -31,12 +31,18 @@ class physics_component
     this.collision_enabled = false;
     this.visible = true;
 
+    this.jumpStart = false;
+
     if(shape == "cube")
       this.object_type  = new Cube();
     else if (shape = "sphere")
       this.object_type = new Subdivision_Sphere( 4 );
 
       console.log(shape);
+
+
+
+     this.jump_count = 0;
     
 
    }
@@ -47,7 +53,7 @@ class physics_component
         impulse[i] = impulse[i]/this.time_dilation;
       
       this.velocity  = this.velocity.plus(Vec.of(impulse[0]/this.mass, impulse[1]/this.mass,impulse[2]/this.mass));
-      console.log(this.velocity);
+     
     }
 
     check_collision_sphere()
@@ -70,18 +76,47 @@ class physics_component
       this.position = position;
     }
 
+    update_position_add(position)
+    {
+      this.position = this.position.plus(position);
+    }
+    
     compute_next()
     {
-       if (this.gravity_enabled)
+       if (this.gravity_enabled || this.jumpStart)
         this.accleration = this.accleration.plus(Vec.of(0,this.g,0));
+
        this.velocity = this.velocity.plus(this.accleration);
+       var TempVelocity = this.velocity.times(1);
         
-       this.position = this.position.plus(this.velocity);
+       this.position = this.position.plus(TempVelocity);
        this.accleration = Vec.of(0,0,0);
+      
+       if (this.position[1] < 0)
+       {
+        this.jumpStart = false;
+        this.velocity = Vec.of(0,0,0);
+        this.jump_count = 0;
+        this.position[1] = 0;
+       }
+    }
+
+    jump()
+    {
+        if (this.jump_count < 2)
+          this.jump_count += 1;
+         
+        else
+            return;
+        this.jumpStart = true;
+        this.accleration = Vec.of(0,0,0);
+        this.update_velocity_override(Vec.of(0,0.25,0));
     }
 
 
 
+
+    
 
 
 
@@ -169,6 +204,11 @@ class Solar_System extends Scene
                                   // Some setup code that tracks whether the "lights are on" (the stars), and also
                                   // stores 30 random location matrices for drawing stars behind the solar system:
       this.lights_on = false;
+
+      this.move_left = false;
+      this.move_right = false;
+      this.jump = 0;
+
       this.apply_impulse = 0;
       this.star_matrices = [];
       for( let i=0; i<30; i++ )
@@ -181,7 +221,16 @@ class Solar_System extends Scene
                                       // buttons with key bindings for affecting this scene, and live info readouts.
 
                                  // TODO (#5b): Add a button control.  Provide a callback that flips the boolean value of "this.lights_on".
-      this.key_triggered_button("apply_impulse", ["l"],  () => {this.apply_impulse += 1;}   );
+      this.key_triggered_button("apply_impulse", ["1"],  () => {this.apply_impulse += 1;}   );
+      this.new_line();
+      this.key_triggered_button("move_left", ["a"],  () => {this.move_left = true; } , '#'+Math.random().toString(9).slice(-6) , () => {this.move_left = false;}  );
+      this.key_triggered_button("move_right", ["d"],  () => {this.move_right = true; } , '#'+Math.random().toString(9).slice(-6) , () => {this.move_right = false;}  );
+      this.new_line();
+      this.key_triggered_button("jump", [" "],  () => {this.jump += 1; } , '#'+Math.random().toString(9).slice(-6) );
+
+     
+
+
     }
   display( context, program_state )
     {                                                // display():  Called once per frame of animation.  For each shape that you want to
@@ -304,7 +353,19 @@ class Solar_System extends Scene
         this.shapes.sphere.apply_impulse(Vec.of(100.0,0.0,0.0));
         this.apply_impulse -= 1;
       }
-      this.shapes.sphere.draw(context, program_state, this.materials.plastic.override( yellow ))
+      if(this.move_right)
+          this.shapes.sphere.update_position_add(Vec.of(0.1,0,0));
+      if (this.move_left)
+           this.shapes.sphere.update_position_add(Vec.of(-0.1,0,0));
+
+      if (this.jump)
+      {
+       this.shapes.sphere.jump();
+       this.jump -= 1;
+      }
+      this.shapes.sphere.draw(context, program_state, this.materials.plastic.override( yellow ));
+
+      
     
       // ***** END TEST SCENE *****
 
@@ -424,7 +485,7 @@ class Gouraud_Shader extends defs.Phong_Shader
         void main()
           {
              
-          } ` ;
+          } ` ;     
     }
   fragment_glsl_code()         // ********* FRAGMENT SHADER ********* 
     {                          // A fragment is a pixel that's overlapped by the current triangle.
