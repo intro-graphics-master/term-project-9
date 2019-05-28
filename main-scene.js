@@ -32,6 +32,7 @@ class physics_component
     this.physics_enabled = false;
     this.collision_enabled = false;
     this.visible = true;
+    this.controllable = false;
 
     this.jumpStart = false;
 
@@ -45,14 +46,33 @@ class physics_component
     {
       this.object_type = new Shape_From_File( "assets/mario/mario.obj" );
       this.rotation = Vec.of(0,Math.PI/2.0,0);
+      this.controllable = true;
     }
-
       
 
      this.jump_count = 0;
     
 
    }
+
+    move_right()
+    {
+      if(this.controllable)
+      {
+        this.rotation = Vec.of(0,Math.PI/2.0,0);
+        this.update_position_add(Vec.of(0.1,0,0));
+      }
+    }
+
+    move_left()
+    {
+      if(this.controllable)
+      {
+        this.update_position_add(Vec.of(-0.1,0,0));
+        this.rotation = Vec.of(0,-Math.PI/2.0,0);
+      }
+    }
+
 
     apply_impulse(impulse)
     {
@@ -189,7 +209,7 @@ class Solar_System extends Scene
                                               // TODO (#2):  Complete this list with any additional materials you need:
 
       this.materials = { plastic: new Material( phong_shader, 
-                                    { ambient: 0, diffusivity: 1, specularity: 0, color: Color.of( 1,.5,1,1 ) } ),
+                                    { ambient: 1, diffusivity: 1, specularity: 0, color: Color.of( 1,.5,1,1 ) } ),
                    plastic_stars: new Material( texture_shader_2,    
                                     { texture: new Texture( "assets/stars.png" ),
                                       ambient: 0, diffusivity: 1, specularity: 0, color: Color.of( .4,.4,.4,1 ) } ),
@@ -233,6 +253,10 @@ class Solar_System extends Scene
 
 
     }
+
+
+
+
   display( context, program_state )
     {                                                // display():  Called once per frame of animation.  For each shape that you want to
                                                      // appear onscreen, place a .draw() call for it inside.  Each time, pass in a
@@ -263,7 +287,7 @@ class Solar_System extends Scene
 
                                                   // Have to reset this for each frame:
       this.camera_teleporter.cameras = [];
-      this.camera_teleporter.cameras.push( Mat4.look_at( Vec.of( 0,10,20 ), Vec.of( 0,0,0 ), Vec.of( 0,1,0 ) ) );
+      //this.camera_teleporter.cameras.push( Mat4.look_at( Vec.of( 0,10,20 ), Vec.of( 0,0,0 ), Vec.of( 0,1,0 ) ) );
 
 
                                              // Variables that are in scope for you to use:
@@ -283,7 +307,7 @@ class Solar_System extends Scene
       Start coding down here!!!!
       **********************************/         
 
-      const blue = Color.of( 0,0,.5,1 ), yellow = Color.of( .5,.5,0,1 );
+      const blue = Color.of( 0,0,.5,1 ), yellow = Color.of( .5,.5,0,1 ), white = Color.of(1.0,1.0,1.0,1.0);
 
                                     // Variable model_transform will be a local matrix value that helps us position shapes.
                                     // It starts over as the identity every single frame - coordinate axes at the origin.
@@ -335,7 +359,7 @@ class Solar_System extends Scene
                                                 // for each of your objects, mimicking the examples above.  Tweak each
                                                 // matrix a bit so you can see the planet, or maybe appear to be standing
                                                 // on it.  Remember the moons.
-      // this.camera_teleporter.cameras.push( Mat4.inverse( 
+     
 
 
 
@@ -345,10 +369,12 @@ class Solar_System extends Scene
 
       //
       const angle = Math.sin( t );
-      const light_position = Mat4.rotation( angle, [ 1,0,0 ] ).times( Vec.of( 0,-1,1,0 ) );
-      program_state.lights = [ new Light( light_position, Color.of( 1,1,1,1 ), 1000000 ) ];
+      //const light_position = Mat4.rotation( angle, [ 1,0,0 ] ).times( Vec.of( 0,-1,1,0 ) );
+      program_state.lights = [ new Light( Vec.of(0,0,0,1), Color.of( 1,1,1,1 ), 1000000 ) ];
       model_transform = Mat4.identity();
       // this.shapes.box.draw( context, program_state, model_transform, this.materials.plastic.override( yellow ) );
+
+      
 
       if(this.apply_impulse > 0)
       {
@@ -357,10 +383,14 @@ class Solar_System extends Scene
       }
       
       
-      if(this.move_right)
-          this.shapes.mario.update_position_add(Vec.of(0.1,0,0));
+      if(this.move_right){
+
+          this.shapes.mario.move_right();
+      }
       if (this.move_left)
-           this.shapes.mario.update_position_add(Vec.of(-0.1,0,0));
+      {
+           this.shapes.mario.move_left();
+      }
       
       if (this.jump)
       {
@@ -373,9 +403,12 @@ class Solar_System extends Scene
      
       
       this.shapes.mario.draw(context, program_state, this.materials.plastic.override( yellow ));
-      program_state.set_camera( Mat4.inverse(this.shapes.mario.transform_position.times(Mat4.translation([ 0,0, 20]))) );
+      //program_state.set_camera( Mat4.inverse(this.shapes.mario.transform_position.times(Mat4.rotation(0 ,[1,0,0])).times(Mat4.translation([ 0,0, 20]))  ) );
 
-      
+      this.shapes.box.draw(context, program_state, model_transform, this.materials.plastic.override( yellow ));
+
+      this.camera_teleporter.cameras.push( Mat4.inverse(this.shapes.mario.transform_position.times(Mat4.rotation(0 ,[1,0,0])).times(Mat4.translation([ 0,0, 20])) ));
+      this.camera_teleporter.cameras.push( Mat4.inverse(this.shapes.mario.transform_position.times(Mat4.rotation(-Math.PI/2 ,[1,0,0])).times(Mat4.translation([ 0,0, 20])) ));
     
       // ***** END TEST SCENE *****
 
@@ -402,6 +435,7 @@ class Camera_Teleporter extends Scene
     { super();
       this.cameras = [];
       this.selection = 0;
+      this.previous= null;
     }
   make_control_panel()
     {                                // make_control_panel(): Sets up a panel of interactive HTML elements, including
@@ -423,7 +457,8 @@ class Camera_Teleporter extends Scene
     if( !desired_camera || !this.enabled )
       return;
     const dt = program_state.animation_delta_time;
-    program_state.set_camera( desired_camera.map( (x,i) => Vec.from( program_state.camera_inverse[i] ).mix( x, .01*dt ) ) );    
+    program_state.set_camera( desired_camera.map( (x,i) => Vec.from( program_state.camera_inverse[i] ).mix( x, .01*dt ) ) );   
+   
   }
 }
 
