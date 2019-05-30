@@ -10,6 +10,8 @@ const { Cube, Subdivision_Sphere, Transforms_Sandbox_Base } = defs;
 
 // (Can define Main_Scene's class here)
 
+var path = [];
+var counter = 0;
 class physics_component
 {
    constructor(mass, shape, position = Vec.of(0,0,0), rotation = Vec.of(0,0,0), time_dilation=1000)
@@ -36,6 +38,10 @@ class physics_component
 
     this.jumpStart = false;
 
+    this.ground = -100000;
+    this.ground_angle = 0;
+    this.shape = shape;
+
     if(shape == "cube")
       this.object_type  = new Cube();
 
@@ -46,7 +52,10 @@ class physics_component
     {
       this.object_type = new Shape_From_File( "assets/mario/mario.obj" );
       this.rotation = Vec.of(0,Math.PI/2.0,0);
+      this.position = Vec.of(-17,-3,0);
       this.controllable = true;
+      this.physics_enabled = true;
+      this.gravity_enabled = true;
     }
 
 
@@ -60,7 +69,50 @@ class physics_component
       if(this.controllable)
       {
         this.rotation = Vec.of(0,Math.PI/2.0,0);
-        this.update_position_add(Vec.of(0.1,0,0));
+        var tempPosition = this.position.plus(Vec.of(0.1,0.1*Math.tan(this.ground_angle),0));
+        var tempGround = -10000;
+        if(this.shape == "mario")
+	   	{
+	   		//this.position[0] = this.ground;
+	   		var i;
+	   		for (i = 0; i < path.length; i++)
+	   		{
+	   			if(i == 0)
+	   			{
+	   				tempGround  = -100000;
+	   			}
+	   			if (tempPosition[0] >= path[i].left_x  && tempPosition[0] < path[i].right_x )
+	   			{
+
+	   				if( path[i].left_height < path[i].right_height )
+	   				{
+	   					tempGround  =  Math.max(path[i].left_height +   ( tempPosition[0] - path[i].left_x ), tempGround  );
+	   				
+	   			
+
+	   				}
+	   				else if (path[i].left_height == path[i].right_height)
+	   				{
+	   					tempGround  = Math.max(path[i].left_height, tempGround );
+	   				
+	   				
+	   					
+	   				}
+	   				else{
+	   					tempGround  =  Math.max(path[i].left_height -  ( tempPosition[0] - path[i].left_x ) + Math.sqrt(2), tempGround );
+	   			
+	   					
+	   				
+	   				}
+
+	   			}
+	   			
+	   		}
+			
+	   		//this.position[1] = this.ground;
+	   }
+	   	if(tempGround - tempPosition[1] <= 0.6  )
+        this.update_position_add(Vec.of(0.1,0.1*Math.tan(this.ground_angle),0));
       }
     }
 
@@ -68,8 +120,50 @@ class physics_component
     {
       if(this.controllable)
       {
-        this.update_position_add(Vec.of(-0.1,0,0));
-        this.rotation = Vec.of(0,-Math.PI/2.0,0);
+      	this.rotation = Vec.of(0,-Math.PI/2.0,0);
+   		var tempPosition = this.position.plus(Vec.of(-0.1,-0.1*Math.tan(this.ground_angle),0));
+        var tempGround = -10000;
+        if(this.shape == "mario")
+	   	{
+	   		//this.position[0] = this.ground;
+	   		var i;
+	   		for (i = 0; i < path.length; i++)
+	   		{
+	   			if(i == 0)
+	   			{
+	   				tempGround  = -100000;
+	   			}
+	   			if (tempPosition[0] >= path[i].left_x  && tempPosition[0] < path[i].right_x )
+	   			{
+
+	   				if( path[i].left_height < path[i].right_height )
+	   				{
+	   					tempGround  =  Math.max(path[i].left_height +   ( tempPosition[0] - path[i].left_x ), tempGround  );
+
+	   				}
+	   				else if (path[i].left_height == path[i].right_height)
+	   				{
+	   					tempGround  = Math.max(path[i].left_height, tempGround );
+	   				
+	   				
+	   					
+	   				}
+	   				else{
+	   					tempGround  =  Math.max(path[i].left_height -  ( tempPosition[0] - path[i].left_x ) + Math.sqrt(2), tempGround );
+	   			
+	   					
+	   				
+	   				}
+
+	   			}
+	   			
+	   		}
+			
+	   		//this.position[1] = this.ground;
+	   }
+	   	if(tempGround - tempPosition[1] <= 0.6  )
+        this.update_position_add(Vec.of(-0.1,-0.1*Math.tan(this.ground_angle),0));
+        
       }
     }
 
@@ -110,32 +204,102 @@ class physics_component
 
     compute_next()
     {
-       if (this.gravity_enabled || this.jumpStart)
+
+ 		if(this.shape == "mario")
+	   {
+	   		//this.position[0] = this.ground;
+	   		var i;
+	   		for (i = 0; i < path.length; i++)
+	   		{
+	   			if(i == 0)
+	   			{
+	   				this.ground = -100000;
+	   			}
+	   			if (this.position[0] >= path[i].left_x  && this.position[0] < path[i].right_x )
+	   			{
+
+	   				if( path[i].left_height < path[i].right_height )
+	   				{
+	   					this.ground =  Math.max(path[i].left_height +   ( this.position[0] - path[i].left_x ), this.ground );
+	   					this.ground_angle = path[i].angle;
+	   			
+
+	   				}
+	   				else if (path[i].left_height == path[i].right_height)
+	   				{
+	   					this.ground = Math.max(path[i].left_height, this.ground);
+	   					this.ground_angle = path[i].angle;
+	   				
+	   					
+	   				}
+	   				else{
+	   					this.ground =  Math.max(path[i].left_height -  ( this.position[0] - path[i].left_x ) + Math.sqrt(2), this.ground);
+	   					this.ground_angle = path[i].angle;
+	   					
+	   				
+	   				}
+
+	   			}
+	   			
+	   		}
+
+	   		
+			
+	   		//this.position[1] = this.ground;
+	   }
+
+       if (this.gravity_enabled && this.position[1] > this.ground ){
         this.accleration = this.accleration.plus(Vec.of(0,this.g,0));
+       }
 
        this.velocity = this.velocity.plus(this.accleration);
        var TempVelocity = this.velocity.times(1);
-       // TODO: compute drag
 
-       this.position = this.position.plus(TempVelocity);
+       // TODO: compute drag
+	   var TempPosition  = 	this.position.plus(TempVelocity);
+
+
+	   if(TempPosition[1] >= this.ground){
+       	this.position = this.position.plus(TempVelocity);
+
+	   }
+	   else if (this.shape == "mario")
+	   	this.jumpStart = false;
+
+
        this.accleration = Vec.of(0,0,0);
 
-       if (this.position[1] < 0)
+
+		
+	  
+	   	
+
+       if (this.position[1] < this.ground && this.shape == "mario")
        {
         this.jumpStart = false;
         this.velocity = Vec.of(0,0,0);
         this.jump_count = 0;
-        this.position[1] = 0;
+        this.position[1] = this.ground;
        }
+       else if ( Math.abs(this.position[1] - this.ground) <= 0.3 && Math.abs(this.position[1] - this.ground) > 0 && this.shape == "mario" && this.jumpStart == false)
+       {
+        	 this.velocity = Vec.of(0,0,0);
+        	 this.jump_count = 0;
+        	 this.position[1] = this.ground;
+       }
+
     }
 
     jump()
     {
+
         if (this.jump_count < 2)
           this.jump_count += 1;
 
         else
             return;
+
+      
         this.jumpStart = true;
         this.accleration = Vec.of(0,0,0);
         this.update_velocity_override(Vec.of(0,0.2,0));
@@ -157,6 +321,8 @@ class physics_component
       this.update_transform();
       this.object_type.draw(context, program_state, this.transforms, material);
       this.compute_next();
+//       if(this.shape == "mario")
+//       	console.log(this.ground);
     }
 
 }
@@ -237,6 +403,7 @@ class Solar_System extends Scene
         this.star_matrices.push( Mat4.rotation( Math.PI/2 * (Math.random()-.5), Vec.of( 0,1,0 ) )
                          .times( Mat4.rotation( Math.PI/2 * (Math.random()-.5), Vec.of( 1,0,0 ) ) )
                          .times( Mat4.translation([ 0,0,-150 ]) ) );
+
     }
   make_control_panel()
     {                                 // make_control_panel(): Sets up a panel of interactive HTML elements, including
@@ -264,6 +431,7 @@ class Solar_System extends Scene
                                                      // different matrix value to control where the shape appears.
 
                            // Setup -- This part sets up the scene's overall camera matrix, projection matrix, and lights:
+     
       if( !context.scratchpad.controls )
         {                       // Add a movement controls panel to the page:
           this.children.push( context.scratchpad.controls = new defs.Movement_Controls() );
@@ -290,6 +458,9 @@ class Solar_System extends Scene
 
                                                   // Have to reset this for each frame:
       this.camera_teleporter.cameras = [];
+      path = [];
+  	  counter = 0;
+
       //this.camera_teleporter.cameras.push( Mat4.look_at( Vec.of( 0,10,20 ), Vec.of( 0,0,0 ), Vec.of( 0,1,0 ) ) );
 	  // this.camera_teleporter.cameras.push( startLookatMat4 );
 
@@ -340,76 +511,112 @@ class Solar_System extends Scene
 
       //
       const angle = Math.sin( t );
+
       //const light_position = Mat4.rotation( angle, [ 1,0,0 ] ).times( Vec.of( 0,-1,1,0 ) );
+
       program_state.lights = [ new Light( Vec.of(0,0,0,1), Color.of( 1,1,1,1 ), 1000000 ) ];
+
       model_transform = Mat4.identity();
+
       // this.shapes.box.draw( context, program_state, model_transform, this.materials.plastic.override( yellow ) );
 
-      if(this.apply_impulse > 0)
-      {
-        this.shapes.mario.apply_impulse(Vec.of(100.0,0.0,0.0));
-        this.apply_impulse -= 1;
-      }
 
 
-      if(this.move_right){
-
-          this.shapes.mario.move_right();
-      }
-      if (this.move_left)
-      {
-           this.shapes.mario.move_left();
-      }
-
-      if (this.jump)
-      {
-       this.shapes.mario.jump();
-       this.jump -= 1;
-      }
-
-      var pos = this.shapes.mario.position;
-      var factor = 1;
 
 
-      this.shapes.mario.draw(context, program_state, this.materials.plastic.override( yellow ));
       //program_state.set_camera( Mat4.inverse(this.shapes.mario.transform_position.times(Mat4.rotation(0 ,[1,0,0])).times(Mat4.translation([ 0,0, 20]))  ) );
 	  //-----draw scene----//
 // 	 const unscaled = model_transform.copy();
 // 	 var model_transform_square = model_transform.times(Mat4.translation(Vec.of(-15, -6, 0)));
 function draw_flat_ground (context, program_state, length, currentPos, shapes, materials)
 {
-    for (var i = 0; i < length; ++i) {
-	  shapes.scene_box.update_position_override(currentPos);
+	
+
+     counter++;
+    
+
+	var left_height = currentPos[1]+3;
+	var right_height = currentPos[1]+3;
+	var left_x = currentPos[0]-1;
+	var right_x;
+	var angle;
+    for (var i = 0; i <= length; ++i) {
+	  shapes.scene_box.update_position_override(currentPos);	  	 
 	  shapes.scene_box.draw(context, program_state, materials.grass_ground);
 	  currentPos = currentPos.plus(Vec.of(2,0,0));
     }
 	  currentPos = currentPos.minus(Vec.of(2,0,0));
+	  right_x = currentPos[0]+1;
+	if(counter == 1)
+    {
+    	
+    	var temp = currentPos;
+    	temp = currentPos.plus(Vec.of(2,0,0));
+    	shapes.scene_box.update_position_override(temp);	  	 
+	  	shapes.scene_box.draw(context, program_state, materials.grass_ground);
+	  	right_x = temp[0]+1;
+
+    }
+	 
+
+	
+	angle = 0;
+	
+	path.push({"left_height" : left_height, "right_height" : right_height, "left_x": left_x, "right_x": right_x, "angle": angle});
 	return currentPos;
 }
+
 function draw_upwards_slope (context, program_state, length, currentPos, shapes, materials)
 {
+	var left_height = currentPos[1];
+	
+	var left_x = currentPos[0]-Math.sqrt(2);
 	currentPos = currentPos.plus(Vec.of(1+2/Math.sqrt(2),1,0));
     for (var i = 0; i < length; ++i) {
 	  shapes.scene_box_45.update_position_override(currentPos);
+	
 	  shapes.scene_box_45.draw(context, program_state, materials.grass_ground);
 	  currentPos = currentPos.plus(Vec.of(2/Math.sqrt(2),2/Math.sqrt(2),0));
     }
+
 	currentPos = currentPos.minus(Vec.of(2/Math.sqrt(2),2/Math.sqrt(2),0));
+	var right_height = currentPos[1]+Math.sqrt(2);
+	var right_x = currentPos[0];
 	currentPos = currentPos.plus(Vec.of(1,2/Math.sqrt(2)-1,0));
+
+
+	var angle = Math.PI/4;
+	
+
+
+	path.push({"left_height" : left_height, "right_height" : right_height, "left_x": left_x, "right_x": right_x, "angle": angle});
 	return currentPos;
 }
 function draw_downwards_slope(context, program_state, length, currentPos, shapes, materials)
 {
+	var left_height = currentPos[1]+Math.sqrt(2);
+	var left_x = currentPos[0]+Math.sqrt(2);
+
 	currentPos = currentPos.plus(Vec.of(1,1-2/Math.sqrt(2),0));
     for (var i = 0; i < length; ++i) {
 	  shapes.scene_box_135.update_position_override(currentPos);
+	
 	  shapes.scene_box_135.draw(context, program_state, materials.grass_ground);
 	  currentPos = currentPos.plus(Vec.of(2/Math.sqrt(2),-2/Math.sqrt(2),0));
     }
+
 	currentPos = currentPos.minus(Vec.of(2/Math.sqrt(2),-2/Math.sqrt(2),0));
+	var right_height = currentPos[1];
+	var right_x = currentPos[0];
 	currentPos = currentPos.plus(Vec.of(1,2/Math.sqrt(2)-1,0));
+
+
+	var angle = -Math.PI/4;
+	path.push({"left_height" : left_height, "right_height" : right_height, "left_x": left_x, "right_x": right_x, "angle": angle});
+
 	return currentPos;
 }
+	
 	var length = 5;
 	var currentPosition = Vec.of(-17, -6, 0);
 	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes, this.materials);
@@ -427,6 +634,41 @@ function draw_downwards_slope(context, program_state, length, currentPos, shapes
 	currentPosition = draw_flat_ground(context, program_state, length, currentPosition.plus(Vec.of(2,2,0)), this.shapes, this.materials);
 	currentPosition = currentPosition.plus(Vec.of(-2*(length-1),2,0));
 	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes, this.materials);
+	
+
+
+	   if(this.apply_impulse > 0)
+      {
+        this.shapes.mario.apply_impulse(Vec.of(100.0,0.0,0.0));
+        this.apply_impulse -= 1;
+      }
+
+
+      if(this.move_right){
+
+          this.shapes.mario.move_right();
+      }
+
+      if (this.move_left)
+      {
+           this.shapes.mario.move_left();
+      }
+
+      if (this.jump)
+      {
+      	this.shapes.mario.jump();
+      	this.jump -= 1;
+      }
+
+      var pos = this.shapes.mario.position;
+      var factor = 1;
+
+
+      
+
+
+      this.shapes.mario.draw(context, program_state, this.materials.plastic.override( yellow ));
+      //console.log(path);
 
 // //	this.shapes.box.draw(context, program_state,  model_transform_square.times(Mat4.scale(Vec.of(2,12,2))), this.materials.plastic);
 // 	var model_transform_slope = model_transform_square.copy();
