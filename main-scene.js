@@ -206,7 +206,10 @@ class physics_component
     {
       this.position = this.position.plus(position);
     }
-
+    update_rotation_override(rotation)
+    {
+      this.rotation = rotation;
+    }
     compute_next()
     {
 
@@ -390,7 +393,7 @@ class Solar_System extends Scene
                      // gold: new Material( new defs.Fake_Bump_Map( 1 ), { color: Color.of( .5,.5,.5,1 ),
 			           // ambient: .3, diffusivity: .5, specularity: .5, texture: new Texture( "assets/gold.png" ) }),
                      gold: new Material( texture_shader_2, {
-			           ambient: 1, diffusivity: 1, specularity: 1, texture: new Texture( "assets/gold.png" ) }),
+			           ambient: 1, diffusivity: 1, specularity: 1, texture: new Texture( "assets/goldcoin.png" ) }),
 
                       black_hole: new Material( black_hole_shader ),
                              sun: new Material( sun_shader, { ambient: 1, color: Color.of( 0,0,0,1 ) } )
@@ -607,7 +610,6 @@ function draw_downwards_slope(context, program_state, length, currentPos, shapes
 	currentPos = currentPos.plus(Vec.of(1,1-2/Math.sqrt(2),0));
     for (var i = 0; i < length; ++i) {
 	  shapes.scene_box_135.update_position_override(currentPos);
-
 	  shapes.scene_box_135.draw(context, program_state, materials.grass_ground);
 	  currentPos = currentPos.plus(Vec.of(2/Math.sqrt(2),-2/Math.sqrt(2),0));
     }
@@ -690,6 +692,7 @@ function draw_vertical_wall(context, program_state, height, currentPos, shapes, 
 	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes, this.materials);
 
 
+      	this.shapes.coin.update_rotation_override = Vec.of(0,angle,0);
 
 	   if(this.apply_impulse > 0)
       {
