@@ -107,7 +107,9 @@ export class Obj_File_Demo extends Scene
     constructor()
       { super();
                               // Load the model file:
-        this.shapes = { "mario": new Shape_From_File( "assets/mario/mario.obj" ) };
+        this.shapes = { "mario": new Shape_From_File( "assets/mario/mario.obj" )
+		// ,"coin": new Shape_From_File( "assets/goldcoin.obj" )
+		};
 
                                                           // Non bump mapped:
         this.stars = new Material( new defs.Textured_Phong( 1 ),  { color: Color.of( .5,.5,.5,1 ),

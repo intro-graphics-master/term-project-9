@@ -8,7 +8,6 @@ const { Cube, Subdivision_Sphere, Transforms_Sandbox_Base } = defs;
 
     // Now we have loaded everything in the files tiny-graphics.js, tiny-graphics-widgets.js, and assignment-4-resources.js.
     // This yielded "tiny", an object wrapping the stuff in the first two files, and "defs" for wrapping all the rest.
-
 // (Can define Main_Scene's class here)
 
 var path = [];
@@ -58,7 +57,12 @@ class physics_component
       this.physics_enabled = true;
       this.gravity_enabled = true;
     }
-
+	else if (shape == "coin")
+	{
+		this.object_type = new Shape_From_File( "assets/dogecoin.obj" );
+      	this.rotation = Vec.of(0,Math.PI/2.0,0);
+      	// this.physics_enabled = true;
+	}
 
      this.jump_count = 0;
 
@@ -348,7 +352,8 @@ class Solar_System extends Scene
                      'star' : new Planar_Star(),
                     "interactive_box1" : new physics_component(10, "cube"),
                     "sphere" : new physics_component(10, "sphere"),
-                    "mario":  new physics_component(10, "mario")
+                    "mario":  new physics_component(10, "mario"),
+					"coin": new physics_component(10, "coin")
                       };
       // *** Shaders ***
 
@@ -382,9 +387,11 @@ class Solar_System extends Scene
                                       ambient: 1, diffusivity: 1, specularity: 0 } ),
                            metal: new Material( phong_shader,
                                     { ambient: 0, diffusivity: 1, specularity: 1, color: Color.of( 1,.5,1,1 ) } ),
-                     metal_earth: new Material( texture_shader_2,
-                                    { texture: new Texture( "assets/earth.gif" ),
-                                      ambient: 0, diffusivity: 1, specularity: 1, color: Color.of( .4,.4,.4,1 ) } ),
+                     // gold: new Material( new defs.Fake_Bump_Map( 1 ), { color: Color.of( .5,.5,.5,1 ),
+			           // ambient: .3, diffusivity: .5, specularity: .5, texture: new Texture( "assets/gold.png" ) }),
+                     gold: new Material( texture_shader_2, {
+			           ambient: 1, diffusivity: 1, specularity: 1, texture: new Texture( "assets/gold.png" ) }),
+
                       black_hole: new Material( black_hole_shader ),
                              sun: new Material( sun_shader, { ambient: 1, color: Color.of( 0,0,0,1 ) } )
                        };
@@ -642,6 +649,8 @@ function draw_vertical_wall(context, program_state, height, currentPos, shapes, 
 	//-------------------------------------------------------------
 	currentPosition = draw_downwards_slope(context, program_state, length, currentPosition, this.shapes, this.materials);
 	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes, this.materials);
+	this.shapes.coin.update_position_override(currentPosition.plus(Vec.of(-cubeSize,2.5*cubeSize,0)));
+    this.shapes.coin.draw(context, program_state, this.materials.gold);
 
 	//Need to push the 1st box to continue
 	var tempHeight = 3; //(currently can directly jump to continue) make it 4 when the wooden box works
@@ -649,17 +658,26 @@ function draw_vertical_wall(context, program_state, height, currentPos, shapes, 
 	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes, this.materials);
 	//TODO: add some coins here (write a function make coins disappear after "collision"?)
 	//three wooden box in the air
-	this.shapes.interactive_box1.update_position_override(currentPosition.plus(Vec.of(-3*cubeSize,3*cubeSize,0)));
-    this.shapes.interactive_box1.draw(context, program_state, this.materials.wooden_box);
 	this.shapes.interactive_box1.update_position_override(currentPosition.plus(Vec.of(-2*cubeSize,3*cubeSize,0)));
     this.shapes.interactive_box1.draw(context, program_state, this.materials.wooden_box);
+	this.shapes.coin.update_position_override(currentPosition.plus(Vec.of(-2*cubeSize,4.5*cubeSize,0)));
+    this.shapes.coin.draw(context, program_state, this.materials.gold);
+
 	this.shapes.interactive_box1.update_position_override(currentPosition.plus(Vec.of(-cubeSize,3*cubeSize,0)));
     this.shapes.interactive_box1.draw(context, program_state, this.materials.wooden_box);
+
+	this.shapes.interactive_box1.update_position_override(currentPosition.plus(Vec.of(0,3*cubeSize,0)));
+    this.shapes.interactive_box1.draw(context, program_state, this.materials.wooden_box);
+	this.shapes.coin.update_position_override(currentPosition.plus(Vec.of(0,4.5*cubeSize,0)));
+    this.shapes.coin.draw(context, program_state, this.materials.gold);
 
 	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes, this.materials);
 	//Need to push the 2nd box to continue
 	this.shapes.interactive_box1.update_position_override(currentPosition.plus(Vec.of(0,2,0)));
     this.shapes.interactive_box1.draw(context, program_state, this.materials.wooden_box);
+	this.shapes.coin.update_position_override(currentPosition.plus(Vec.of(0,2.5*cubeSize,0)));
+    this.shapes.coin.draw(context, program_state, this.materials.gold);
+
 	currentPosition = draw_downwards_slope(context, program_state, length, currentPosition, this.shapes, this.materials);
 	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes, this.materials);
 
