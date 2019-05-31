@@ -296,6 +296,10 @@ class physics_component
         	 this.position[1] = this.ground;
        }
 
+	   //TODO: Coin collection
+	   //need to obtain current postion of Mario somehow
+	  // if (this.shape == "coin" && this.position[1] - mario.position <= ?? && this.position[0] - mario.positon <= ??)
+	  //	this.visible = false;
     }
 
     jump()
@@ -651,6 +655,9 @@ function draw_vertical_wall(context, program_state, height, currentPos, shapes, 
 	//-------------------------------------------------------------
 	currentPosition = draw_downwards_slope(context, program_state, length, currentPosition, this.shapes, this.materials);
 	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes, this.materials);
+	//TODO: spinning effect
+  	this.shapes.coin.update_rotation_override(Vec.of(0,Math.sin(t),0));
+
 	this.shapes.coin.update_position_override(currentPosition.plus(Vec.of(-cubeSize,2.5*cubeSize,0)));
     this.shapes.coin.draw(context, program_state, this.materials.gold);
 
@@ -691,8 +698,6 @@ function draw_vertical_wall(context, program_state, height, currentPos, shapes, 
 	currentPosition = draw_flat_ground(context, program_state, length, currentPosition.plus(Vec.of(0,cubeSize,0)), this.shapes, this.materials);
 	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes, this.materials);
 
-
-      	this.shapes.coin.update_rotation_override = Vec.of(0,angle,0);
 
 	   if(this.apply_impulse > 0)
       {
