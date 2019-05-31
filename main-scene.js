@@ -1,5 +1,6 @@
 import {tiny, defs} from './assignment-4-resources.js';
 import { Shape_From_File } from './obj-file-demo.js';
+// import { Obj_File_Demo } from './obj-file-demo.js';
                                                                 // Pull these names into this module's scope for convenience:
 const { Vec, Mat, Mat4, Color, Light, Shape, Shader, Material, Texture,
          Scene, Canvas_Widget, Code_Widget, Text_Widget } = tiny;
@@ -87,28 +88,28 @@ class physics_component
 	   				if( path[i].left_height < path[i].right_height )
 	   				{
 	   					tempGround  =  Math.max(path[i].left_height +   ( tempPosition[0] - path[i].left_x ), tempGround  );
-	   				
-	   			
+
+
 
 	   				}
 	   				else if (path[i].left_height == path[i].right_height)
 	   				{
 	   					tempGround  = Math.max(path[i].left_height, tempGround );
-	   				
-	   				
-	   					
+
+
+
 	   				}
 	   				else{
 	   					tempGround  =  Math.max(path[i].left_height -  ( tempPosition[0] - path[i].left_x ) + Math.sqrt(2), tempGround );
-	   			
-	   					
-	   				
+
+
+
 	   				}
 
 	   			}
-	   			
+
 	   		}
-			
+
 	   		//this.position[1] = this.ground;
 	   }
 	   	if(tempGround - tempPosition[1] <= 0.6  )
@@ -144,26 +145,26 @@ class physics_component
 	   				else if (path[i].left_height == path[i].right_height)
 	   				{
 	   					tempGround  = Math.max(path[i].left_height, tempGround );
-	   				
-	   				
-	   					
+
+
+
 	   				}
 	   				else{
 	   					tempGround  =  Math.max(path[i].left_height -  ( tempPosition[0] - path[i].left_x ) + Math.sqrt(2), tempGround );
-	   			
-	   					
-	   				
+
+
+
 	   				}
 
 	   			}
-	   			
+
 	   		}
-			
+
 	   		//this.position[1] = this.ground;
 	   }
 	   	if(tempGround - tempPosition[1] <= 0.6  )
         this.update_position_add(Vec.of(-0.1,-0.1*Math.tan(this.ground_angle),0));
-        
+
       }
     }
 
@@ -222,29 +223,29 @@ class physics_component
 	   				{
 	   					this.ground =  Math.max(path[i].left_height +   ( this.position[0] - path[i].left_x ), this.ground );
 	   					this.ground_angle = path[i].angle;
-	   			
+
 
 	   				}
 	   				else if (path[i].left_height == path[i].right_height)
 	   				{
 	   					this.ground = Math.max(path[i].left_height, this.ground);
 	   					this.ground_angle = path[i].angle;
-	   				
-	   					
+
+
 	   				}
 	   				else{
 	   					this.ground =  Math.max(path[i].left_height -  ( this.position[0] - path[i].left_x ) + Math.sqrt(2), this.ground);
 	   					this.ground_angle = path[i].angle;
-	   					
-	   				
+
+
 	   				}
 
 	   			}
-	   			
+
 	   		}
 
-	   		
-			
+
+
 	   		//this.position[1] = this.ground;
 	   }
 
@@ -270,9 +271,9 @@ class physics_component
        this.accleration = Vec.of(0,0,0);
 
 
-		
-	  
-	   	
+
+
+
 
        if (this.position[1] < this.ground && this.shape == "mario")
        {
@@ -299,7 +300,7 @@ class physics_component
         else
             return;
 
-      
+
         this.jumpStart = true;
         this.accleration = Vec.of(0,0,0);
         this.update_velocity_override(Vec.of(0,0.2,0));
@@ -328,8 +329,7 @@ class physics_component
 }
 
 
-
-const Main_Scene =
+ const Main_Scene = //Obj_File_Demo;
 class Solar_System extends Scene
 {                                             // **Solar_System**:  Your Assingment's Scene.
   constructor()
@@ -431,7 +431,7 @@ class Solar_System extends Scene
                                                      // different matrix value to control where the shape appears.
 
                            // Setup -- This part sets up the scene's overall camera matrix, projection matrix, and lights:
-     
+
       if( !context.scratchpad.controls )
         {                       // Add a movement controls panel to the page:
           this.children.push( context.scratchpad.controls = new defs.Movement_Controls() );
@@ -530,10 +530,10 @@ class Solar_System extends Scene
 // 	 var model_transform_square = model_transform.times(Mat4.translation(Vec.of(-15, -6, 0)));
 function draw_flat_ground (context, program_state, length, currentPos, shapes, materials)
 {
-	
+
 
      counter++;
-    
+
 
 	var left_height = currentPos[1]+3;
 	var right_height = currentPos[1]+3;
@@ -541,7 +541,7 @@ function draw_flat_ground (context, program_state, length, currentPos, shapes, m
 	var right_x;
 	var angle;
     for (var i = 0; i <= length; ++i) {
-	  shapes.scene_box.update_position_override(currentPos);	  	 
+	  shapes.scene_box.update_position_override(currentPos);
 	  shapes.scene_box.draw(context, program_state, materials.grass_ground);
 	  currentPos = currentPos.plus(Vec.of(2,0,0));
     }
@@ -549,19 +549,19 @@ function draw_flat_ground (context, program_state, length, currentPos, shapes, m
 	  right_x = currentPos[0]+1;
 	if(counter == 1)
     {
-    	
+
     	var temp = currentPos;
     	temp = currentPos.plus(Vec.of(2,0,0));
-    	shapes.scene_box.update_position_override(temp);	  	 
+    	shapes.scene_box.update_position_override(temp);
 	  	shapes.scene_box.draw(context, program_state, materials.grass_ground);
 	  	right_x = temp[0]+1;
 
     }
-	 
 
-	
+
+
 	angle = 0;
-	
+
 	path.push({"left_height" : left_height, "right_height" : right_height, "left_x": left_x, "right_x": right_x, "angle": angle});
 	return currentPos;
 }
@@ -569,12 +569,12 @@ function draw_flat_ground (context, program_state, length, currentPos, shapes, m
 function draw_upwards_slope (context, program_state, length, currentPos, shapes, materials)
 {
 	var left_height = currentPos[1];
-	
+
 	var left_x = currentPos[0]-Math.sqrt(2);
 	currentPos = currentPos.plus(Vec.of(1+2/Math.sqrt(2),1,0));
     for (var i = 0; i < length; ++i) {
 	  shapes.scene_box_45.update_position_override(currentPos);
-	
+
 	  shapes.scene_box_45.draw(context, program_state, materials.grass_ground);
 	  currentPos = currentPos.plus(Vec.of(2/Math.sqrt(2),2/Math.sqrt(2),0));
     }
@@ -586,7 +586,7 @@ function draw_upwards_slope (context, program_state, length, currentPos, shapes,
 
 
 	var angle = Math.PI/4;
-	
+
 
 
 	path.push({"left_height" : left_height, "right_height" : right_height, "left_x": left_x, "right_x": right_x, "angle": angle});
@@ -600,7 +600,7 @@ function draw_downwards_slope(context, program_state, length, currentPos, shapes
 	currentPos = currentPos.plus(Vec.of(1,1-2/Math.sqrt(2),0));
     for (var i = 0; i < length; ++i) {
 	  shapes.scene_box_135.update_position_override(currentPos);
-	
+
 	  shapes.scene_box_135.draw(context, program_state, materials.grass_ground);
 	  currentPos = currentPos.plus(Vec.of(2/Math.sqrt(2),-2/Math.sqrt(2),0));
     }
@@ -616,25 +616,61 @@ function draw_downwards_slope(context, program_state, length, currentPos, shapes
 
 	return currentPos;
 }
-	
-	var length = 5;
+//draw a vertical wall of "height" start from the next cube position
+function draw_vertical_wall(context, program_state, height, currentPos, shapes, materials)
+{
+	if(height < 0)
+		currentPos = currentPos.plus(Vec.of(cubeSize,height*cubeSize,0));
+	else
+		currentPos = currentPos.plus(Vec.of(cubeSize,0,0));
+    for (var i = 0; i < Math.abs(height); ++i) {
+		currentPos = draw_flat_ground(context, program_state, 0, currentPos, shapes, materials);
+		currentPos = currentPos.plus(Vec.of(0,cubeSize,0));
+	}
+	currentPos = currentPos.minus(Vec.of(0,cubeSize,0));
+	return currentPos;
+}
+	const cubeSize = 2;
+	var length = 3;
 	var currentPosition = Vec.of(-17, -6, 0);
+	//----------All the way until the first box--------------------
 	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes, this.materials);
 	currentPosition = draw_upwards_slope(context, program_state, length, currentPosition, this.shapes, this.materials);
 	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes, this.materials);
 	this.shapes.interactive_box1.update_position_override(currentPosition.plus(Vec.of(0,2,0)));
     this.shapes.interactive_box1.draw(context, program_state, this.materials.wooden_box);
+	//-------------------------------------------------------------
 	currentPosition = draw_downwards_slope(context, program_state, length, currentPosition, this.shapes, this.materials);
 	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes, this.materials);
+
+	//Need to push the 1st box to continue
+	var tempHeight = 3; //(currently can directly jump to continue) make it 4 when the wooden box works
+	currentPosition = draw_vertical_wall(context, program_state, tempHeight, currentPosition, this.shapes, this.materials);
 	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes, this.materials);
+	//TODO: add some coins here (write a function make coins disappear after "collision"?)
+	//three wooden box in the air
+	this.shapes.interactive_box1.update_position_override(currentPosition.plus(Vec.of(-3*cubeSize,3*cubeSize,0)));
+    this.shapes.interactive_box1.draw(context, program_state, this.materials.wooden_box);
+	this.shapes.interactive_box1.update_position_override(currentPosition.plus(Vec.of(-2*cubeSize,3*cubeSize,0)));
+    this.shapes.interactive_box1.draw(context, program_state, this.materials.wooden_box);
+	this.shapes.interactive_box1.update_position_override(currentPosition.plus(Vec.of(-cubeSize,3*cubeSize,0)));
+    this.shapes.interactive_box1.draw(context, program_state, this.materials.wooden_box);
+
+	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes, this.materials);
+	//Need to push the 2nd box to continue
+	this.shapes.interactive_box1.update_position_override(currentPosition.plus(Vec.of(0,2,0)));
+    this.shapes.interactive_box1.draw(context, program_state, this.materials.wooden_box);
 	currentPosition = draw_downwards_slope(context, program_state, length, currentPosition, this.shapes, this.materials);
 	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes, this.materials);
-	currentPosition = currentPosition.plus(Vec.of(2,-2,0));
-	currentPosition = draw_flat_ground(context, program_state, 1, currentPosition, this.shapes, this.materials);
-	currentPosition = draw_flat_ground(context, program_state, length, currentPosition.plus(Vec.of(2,2,0)), this.shapes, this.materials);
-	currentPosition = currentPosition.plus(Vec.of(-2*(length-1),2,0));
+
+	//pit
+	let depth = 2, width = 3;
+	currentPosition = draw_vertical_wall(context, program_state, -depth, currentPosition.minus(Vec.of(cubeSize,0,0)), this.shapes, this.materials);
+	currentPosition = draw_flat_ground(context, program_state, width, currentPosition.plus(Vec.of(0,-depth*cubeSize,0)), this.shapes, this.materials);
+	currentPosition = draw_vertical_wall(context, program_state, depth + 1, currentPosition, this.shapes, this.materials);
+	currentPosition = draw_flat_ground(context, program_state, length, currentPosition.plus(Vec.of(0,cubeSize,0)), this.shapes, this.materials);
 	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes, this.materials);
-	
+
 
 
 	   if(this.apply_impulse > 0)
@@ -664,7 +700,7 @@ function draw_downwards_slope(context, program_state, length, currentPos, shapes
       var factor = 1;
 
 
-      
+
 
 
       this.shapes.mario.draw(context, program_state, this.materials.plastic.override( yellow ));
