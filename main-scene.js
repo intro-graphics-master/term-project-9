@@ -18,7 +18,16 @@ var boxes = [];
 var interactive_boxes = [];
 var frame = 0;
 //TODO: implement score calculation
-var coinScore = 0;
+ var coinScore = 0;
+//reviving structure
+var revivePoints = [];
+var currentRPIndex = 0;
+//store riving points
+//TODO: EDIT POINTS
+revivePoints.push(Vec.of(-17, 20, 0));
+revivePoints.push(Vec.of(0, 20, 0));
+revivePoints.push(Vec.of(10, 20, 0));
+revivePoints.push(Vec.of(20, 20, 0));
 
 class physics_component
 {
@@ -323,7 +332,7 @@ class pushable_box extends physics_component
 
        if (this.position[1] < this.ground+1 )
        {
-       
+
         this.velocity = Vec.of(0,0,0);
         this.position[1] = this.ground+1;
        }
@@ -825,21 +834,21 @@ function draw_vertical_wall(context, program_state, height, currentPos, shapes, 
 function draw_plank (context, program_state, length, currentPos, shapes, materials)
 {
      counter++;
-	var scaleSize = 4;
-	currentPos = currentPos.plus(Vec.of(scaleSize+1,0,0))
-	var left_height = currentPos[1]+3;
-	var right_height = currentPos[1]+3;
-	var left_x = currentPos[0]-1;
+	var scaleSizeX = 4, scaleSizeY = 1/3;
+	currentPos = currentPos.plus(Vec.of(scaleSizeX+1,0,0))
+	var left_height = currentPos[1]+3-(1-scaleSizeY);
+	var right_height = currentPos[1]+3-(1-scaleSizeY);
+	var left_x = currentPos[0]-scaleSizeX;
 	var right_x;
 	var angle;
     for (var i = 0; i <= length; ++i) {
 	  shapes.plank.update_position_override(currentPos);
-	  shapes.plank.update_scale_override(Vec.of(scaleSize,1/3,1));
+	  shapes.plank.update_scale_override(Vec.of(scaleSizeX,scaleSizeY,1));
 	  shapes.plank.draw(context, program_state, materials.wood);
 	  currentPos = currentPos.plus(Vec.of(2,0,0));
     }
 	  currentPos = currentPos.minus(Vec.of(2,0,0));
-	  right_x = currentPos[0]+1;
+	  right_x = currentPos[0]+scaleSizeX;
 	if(counter == 1)
     {
 
@@ -1013,9 +1022,19 @@ function check_for_coin_collection(shapes)
       var factor = 1;
 	  check_for_coin_collection(this.shapes);
 
-
-
-
+	//update Revive Point
+	for (var i = currentRPIndex; i < revivePoints.length; i++)
+	{
+		let currentPoint = revivePoints[i];
+		if(pos[0] > currentPoint[0])
+			currentRPIndex = i;
+			console.log(currentRPIndex);
+	}
+	//death detection
+	if(pos[1] < -20)
+	{
+	  	this.shapes.mario.update_position_override(revivePoints[currentRPIndex]);
+	}
       this.shapes.mario.draw(context, program_state, this.materials.plastic.override( yellow ));
       //console.log(path);
 
