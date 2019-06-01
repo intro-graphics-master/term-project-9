@@ -31,6 +31,7 @@ class physics_component
     this.transform_position= Mat4.identity();
 
     this.rotation = rotation;
+	this.scale = Vec.of(1,1,1);
     this.mass = mass;
     this.g = -9.8/time_dilation;
 
@@ -62,6 +63,10 @@ class physics_component
       	// this.physics_enabled = true;
 	}
 
+	else if (shape == "plank")
+	{
+		this.object_type = new Shape_From_File( "assets/plank.obj" );
+	}
 
 
 
@@ -100,6 +105,10 @@ class physics_component
     update_rotation_override(rotation)
     {
       this.rotation = rotation;
+    }
+    update_scale_override(scale)
+    {
+      this.scale = scale;
     }
     update_visibiliy(visibility)
 	{
@@ -142,8 +151,7 @@ class physics_component
        this.transforms = this.transforms.times(Mat4.rotation(this.rotation[0], [1,0,0]));
        this.transforms = this.transforms.times(Mat4.rotation(this.rotation[1], [0,1,0]));
        this.transforms = this.transforms.times(Mat4.rotation(this.rotation[2], [0,0,1]));
-
-
+       this.transforms = this.transforms.times(Mat4.scale(this.scale));
     }
 
     draw(context, program_state, material)
@@ -494,8 +502,8 @@ class Movement_Controls extends Scene
 					"interactive_box2":new pushable_box(10, "cube"),
 					"interactive_box3":new pushable_box(10, "cube"),
 					"interactive_box4":new pushable_box(10, "cube"),
-					"interactive_box5":new pushable_box(10, "cube")
-
+					"interactive_box5":new pushable_box(10, "cube"),
+					"plank":new physics_component(100, "cube")
                       };
       // *** Shaders ***
 
@@ -524,6 +532,9 @@ class Movement_Controls extends Scene
                    wooden_box: new Material( texture_shader_2,
                                     { texture: new Texture( "assets/woodenBox.png" ),
                                       ambient: 1, diffusivity: 1, specularity: 0 } ),
+					wood: new Material( texture_shader_2,
+                                      { texture: new Texture( "assets/wood.png" ),
+                                        ambient: 1, diffusivity: 1, specularity: 0 } ),
                            metal: new Material( phong_shader,
                                     { ambient: 0, diffusivity: 1, specularity: 1, color: Color.of( 1,.5,1,1 ) } ),
                      // gold: new Material( new defs.Fake_Bump_Map( 1 ), { color: Color.of( .5,.5,.5,1 ),
@@ -766,6 +777,40 @@ function draw_vertical_wall(context, program_state, height, currentPos, shapes, 
 //function draw_coin(context, program_state, position, rotationangle, thecoin)
 //TODO: interactive box placing function
 //function draw_interactive_box(context, program_state, position, thebox)
+function draw_plank (context, program_state, length, currentPos, shapes, materials)
+{
+     counter++;
+	var scaleSize = 4;
+	currentPos = currentPos.plus(Vec.of(scaleSize+1,0,0))
+	var left_height = currentPos[1]+3;
+	var right_height = currentPos[1]+3;
+	var left_x = currentPos[0]-1;
+	var right_x;
+	var angle;
+    for (var i = 0; i <= length; ++i) {
+	  shapes.plank.update_position_override(currentPos);
+	  shapes.plank.update_scale_override(Vec.of(scaleSize,1/3,1));
+	  shapes.plank.draw(context, program_state, materials.wood);
+	  currentPos = currentPos.plus(Vec.of(2,0,0));
+    }
+	  currentPos = currentPos.minus(Vec.of(2,0,0));
+	  right_x = currentPos[0]+1;
+	if(counter == 1)
+    {
+
+    	var temp = currentPos;
+    	temp = currentPos.plus(Vec.of(2,0,0));
+    	shapes.plank.update_position_override(temp);
+	  	shapes.plank.draw(context, program_state, materials.wood);
+	  	right_x = temp[0]+1;
+
+    }
+
+	angle = 0;
+
+	path.push({"left_height" : left_height, "right_height" : right_height, "left_x": left_x, "right_x": right_x, "angle": angle});
+	return currentPos;
+}
 
 function check_for_coin_collection(shapes)
 {
@@ -789,7 +834,6 @@ function check_for_coin_collection(shapes)
 					shapes.coin2.update_visibiliy(false);
 					break;
 				case 2:
-					console.log("here");
 					if(shapes.coin3.visible == true)
 						coinScore++;
 					shapes.coin3.update_visibiliy(false);
@@ -887,7 +931,13 @@ function check_for_coin_collection(shapes)
 	currentPosition = draw_vertical_wall(context, program_state, depth+1, currentPosition, this.shapes, this.materials);
 	currentPosition = draw_flat_ground(context, program_state, length, currentPosition.plus(Vec.of(0,cubeSize,0)), this.shapes, this.materials);
 	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes, this.materials);
-
+	//floating plank
+	var plankPosition = -4*Math.sin(t/2) - 1;
+	currentPosition = draw_plank(context, program_state, 2, currentPosition.minus(Vec.of(0,plankPosition*cubeSize,0)), this.shapes, this.materials);
+	currentPosition = currentPosition.plus(Vec.of(0,plankPosition*cubeSize,0))
+	// this.shapes.plank.update_position_override(currentPosition.plus(Vec.of(cubeSize,0,0)));
+  	// this.shapes.plank.draw(context, program_state, this.materials.wood);
+	currentPosition = draw_flat_ground(context, program_state, length, currentPosition.plus(Vec.of(length*cubeSize, 5*cubeSize,0)), this.shapes, this.materials);
 
 	   if(this.apply_impulse > 0)
       {
