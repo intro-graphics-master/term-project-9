@@ -769,17 +769,13 @@ function draw_vertical_wall(context, program_state, height, currentPos, shapes, 
 
 function check_for_coin_collection(shapes)
 {
-	   //TODO: Coin collection
-	   //need to obtain current postion of Mario somehow
-	  // if ( this.position[1] - mario.position <= ?? && this.position[0] - mario.positon <= ??)
-	  //	this.visible = false;
 	var marioPos = shapes.mario.position;
 	var i = 0;
 	for(; i < coins.length; ++i)
 	{
 		var coinPos = coins[i];
 		var effectiveDistance = 2;
-		if(coinPos.position[0] - marioPos[0] <= effectiveDistance && coinPos.position[1] - marioPos[1] <= effectiveDistance)
+		if(Math.abs(coinPos.position[0] - marioPos[0]) <= effectiveDistance && Math.abs(coinPos.position[1] - marioPos[1]) <= effectiveDistance)
 		{
 			switch (i) {
 				case 0:
@@ -793,6 +789,7 @@ function check_for_coin_collection(shapes)
 					shapes.coin2.update_visibiliy(false);
 					break;
 				case 2:
+					console.log("here");
 					if(shapes.coin3.visible == true)
 						coinScore++;
 					shapes.coin3.update_visibiliy(false);
@@ -885,9 +882,9 @@ function check_for_coin_collection(shapes)
 
 	//pit
 	let depth = 2, width = 3;
-	currentPosition = draw_vertical_wall(context, program_state, -depth, currentPosition.minus(Vec.of(cubeSize,0,0)), this.shapes, this.materials);
-	currentPosition = draw_flat_ground(context, program_state, width, currentPosition.plus(Vec.of(0,-depth*cubeSize,0)), this.shapes, this.materials);
-	currentPosition = draw_vertical_wall(context, program_state, depth + 1, currentPosition, this.shapes, this.materials);
+	currentPosition = draw_vertical_wall(context, program_state, -(depth-1), currentPosition.minus(Vec.of(cubeSize,0,0)), this.shapes, this.materials);
+	currentPosition = draw_flat_ground(context, program_state, width, currentPosition.plus(Vec.of(0,-(depth-1)*cubeSize,0)), this.shapes, this.materials);
+	currentPosition = draw_vertical_wall(context, program_state, depth+1, currentPosition, this.shapes, this.materials);
 	currentPosition = draw_flat_ground(context, program_state, length, currentPosition.plus(Vec.of(0,cubeSize,0)), this.shapes, this.materials);
 	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes, this.materials);
 
