@@ -15,6 +15,9 @@ var counter = 0;
 var coins = [];
 var boxes = [];
 var frame = 0;
+//TODO: implement score calculation
+var coinScore = 0;
+
 class physics_component
 {
    constructor(mass, shape, position = Vec.of(0,0,0), rotation = Vec.of(0,0,0), time_dilation=1000)
@@ -128,6 +131,12 @@ class physics_component
 
 
        this.accleration = Vec.of(0,0,0);
+
+	   //TODO: implement visibility
+	   if(this.visible == false)
+	   {
+	   		this.position = Vec.of(-100,0,0);
+	   }
 
     }
 
@@ -460,9 +469,6 @@ class mario extends physics_component
         	 this.jump_count = 0;
         	 this.position[1] = this.ground;
        }
-
-	  // if (this.shape == "coin" && this.position[1] - mario.position <= ?? && this.position[0] - mario.positon <= ??)
-	  //	this.visible = false;
     }
 }
 
@@ -767,93 +773,124 @@ function draw_vertical_wall(context, program_state, height, currentPos, shapes, 
 	currentPos = currentPos.minus(Vec.of(0,cubeSize,0));
 	return currentPos;
 }
-// function check_for_coin_collection(marioPos)
-// {
-// 	   //TODO: Coin collection
-// 	   //need to obtain current postion of Mario somehow
-// 	  // if ( this.position[1] - mario.position <= ?? && this.position[0] - mario.positon <= ??)
-// 	  //	this.visible = false;
-// 	for(i = 0; i < coins.length; ++i)
-// 	{
-// 		var coinPos = coins[i];
-// 		if(coinPos[] - marioPos &&)
-// 		//multiple if statement/ switch??
-// 			this.shapes.coini.update_visibiliy(false);
-// 	}
-// }
-//	check_for_coin_collection(this.shapes.mario.position);
+//TODO: coin drawing function
+//function draw_coin(context, program_state, position, rotationangle, thecoin)
+//TODO: interactive box placing function
+//function draw_interactive_box(context, program_state, position, thebox)
+
+function check_for_coin_collection(shapes)
+{
+	   //TODO: Coin collection
+	   //need to obtain current postion of Mario somehow
+	  // if ( this.position[1] - mario.position <= ?? && this.position[0] - mario.positon <= ??)
+	  //	this.visible = false;
+	var marioPos = shapes.mario.position;
+	var i = 0;
+	for(; i < coins.length; ++i)
+	{
+		var coinPos = coins[i];
+		var effectiveDistance = 2;
+		if(coinPos.position[0] - marioPos[0] <= effectiveDistance && coinPos.position[1] - marioPos[1] <= effectiveDistance)
+		{
+			switch (i) {
+				case 0:
+					if(shapes.coin1.visible == true)
+						coinScore++;
+					shapes.coin1.update_visibiliy(false);
+					break;
+				case 1:
+					if(shapes.coin2.visible == true)
+						coinScore++;
+					shapes.coin2.update_visibiliy(false);
+					break;
+				case 2:
+					if(shapes.coin3.visible == true)
+						coinScore++;
+					shapes.coin3.update_visibiliy(false);
+					break;
+				case 3:
+					if(shapes.coin4.visible == true)
+						coinScore++;
+					shapes.coin4.update_visibiliy(false);
+					break;
+				default:
+			}
+
+		}
+	}
+}
+
 	const cubeSize = 2;
 	var length = 3;
-	var currentPosition = Vec.of(-17, -6, 0);
-	//----------All the way until the first box--------------------
+	var currentPosition = Vec.of(-17, -6, 0); //starting position of ground
+
 	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes, this.materials);
 	currentPosition = draw_upwards_slope(context, program_state, length, currentPosition, this.shapes, this.materials);
 	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes, this.materials);
+	//first interactive box
 	if(frame == 0)
+	{
 		this.shapes.interactive_box1.update_position_override(currentPosition.plus(Vec.of(0,2,0)));
+    	boxes.push(currentPosition.plus(Vec.of(0,2,0)));
+	}
     this.shapes.interactive_box1.draw(context, program_state, this.materials.wooden_box);
 
-    if(frame == 0)
-    	boxes.push(currentPosition.plus(Vec.of(0,2,0)));
-	//-------------------------------------------------------------
 	currentPosition = draw_downwards_slope(context, program_state, length, currentPosition, this.shapes, this.materials);
 	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes, this.materials);
 	//first coin
+	if (frame == 0)
+	{
+		this.shapes.coin1.update_position_override(currentPosition.plus(Vec.of(-cubeSize,2.5*cubeSize,0)));
+    	coins.push({'position': this.shapes.coin1.position});
+	}
   	this.shapes.coin1.update_rotation_override(Vec.of(0,angle,0));
-	this.shapes.coin1.update_position_override(currentPosition.plus(Vec.of(-cubeSize,2.5*cubeSize,0)));
     this.shapes.coin1.draw(context, program_state, this.materials.gold);
-
-    if (frame == 0)
-    	coins.push({'position':Vec.of(-cubeSize,2.5*cubeSize,0) });
-
-	//Need to push the 1st box to continue
+	//Need to push the 1st box to keep going
 	var tempHeight = 3; //(currently can directly jump to continue) make it 4 when the wooden box works
 	currentPosition = draw_vertical_wall(context, program_state, tempHeight, currentPosition, this.shapes, this.materials);
 	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes, this.materials);
 	//three wooden box in the air
 	this.shapes.fixedBox.update_position_override(currentPosition.plus(Vec.of(-2*cubeSize,3*cubeSize,0)));
     this.shapes.fixedBox.draw(context, program_state, this.materials.wooden_box);
-//    	if(frame == 0)
-//     	boxes.push(currentPosition.plus(Vec.of(-2*cubeSize,3*cubeSize,0)));
-	//draw two coin2 and coin3 above the boxes in the air
-	this.shapes.coin2.update_position_override(currentPosition.plus(Vec.of(-2*cubeSize,4.5*cubeSize,0)));
+	//draw second coin above the boxes in the air
+	if (frame == 0)
+	{
+		this.shapes.coin2.update_position_override(currentPosition.plus(Vec.of(-2*cubeSize,4.5*cubeSize,0)));
+    	coins.push({'position': this.shapes.coin2.position});
+	}
   	this.shapes.coin2.update_rotation_override(Vec.of(0,angle,0));
     this.shapes.coin2.draw(context, program_state, this.materials.gold);
-
-    if (frame == 0)
-    	coins.push({'position':Vec.of(-2*cubeSize,4.5*cubeSize,0) });
-
+	//keep drawing the other two boxes
 	this.shapes.fixedBox.update_position_override(currentPosition.plus(Vec.of(-cubeSize,3*cubeSize,0)));
     this.shapes.fixedBox.draw(context, program_state, this.materials.wooden_box);
-// 	if(frame == 0)
-//     	boxes.push(currentPosition.plus(Vec.of(-cubeSize,3*cubeSize,0)));
 	this.shapes.fixedBox.update_position_override(currentPosition.plus(Vec.of(0,3*cubeSize,0)));
     this.shapes.fixedBox.draw(context, program_state, this.materials.wooden_box);
-    if(frame == 0)
-    	boxes.push(currentPosition.plus(Vec.of(0,3*cubeSize,0)));
-
-	this.shapes.coin3.update_position_override(currentPosition.plus(Vec.of(0,4.5*cubeSize,0)));
+	//draw third coin above the boxes in the air
+	if (frame == 0)
+	{
+		this.shapes.coin3.update_position_override(currentPosition.plus(Vec.of(0,4.5*cubeSize,0)));
+    	coins.push({'position': this.shapes.coin3.position});
+	}
   	this.shapes.coin3.update_rotation_override(Vec.of(0,angle,0));
     this.shapes.coin3.draw(context, program_state, this.materials.gold);
-    if (frame == 0)
-    	coins.push({'position':Vec.of(0,4.5*cubeSize,0) });
-
-
+	//ground
 	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes, this.materials);
-	//Need to push the 2nd box to continue
+	//Need to push the 2nd interactive box to continue
     if (frame == 0)
+	{
 		this.shapes.interactive_box2.update_position_override(currentPosition.plus(Vec.of(0,2,0)));
-    this.shapes.interactive_box2.draw(context, program_state, this.materials.wooden_box);
-//     if(frame == 0)
 //     	boxes.push(currentPosition.plus(Vec.of(0,2,0)));
-
-	this.shapes.coin4.update_position_override(currentPosition.plus(Vec.of(0,2.5*cubeSize,0)));
+	}
+    this.shapes.interactive_box2.draw(context, program_state, this.materials.wooden_box);
+	//4th coin
+	if (frame == 0)
+	{
+		this.shapes.coin4.update_position_override(currentPosition.plus(Vec.of(0,2.5*cubeSize,0)));
+    	coins.push({'position': this.shapes.coin4.position});
+	}
   	this.shapes.coin4.update_rotation_override(Vec.of(0,angle,0));
     this.shapes.coin4.draw(context, program_state, this.materials.gold);
-
-    if (frame == 0)
-    	coins.push({'position':Vec.of(0,2.5*cubeSize,0) });
-
+	//----\\\
 	currentPosition = draw_downwards_slope(context, program_state, length, currentPosition, this.shapes, this.materials);
 	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes, this.materials);
 
@@ -891,7 +928,7 @@ function draw_vertical_wall(context, program_state, height, currentPos, shapes, 
 
       var pos = this.shapes.mario.position;
       var factor = 1;
-
+	  check_for_coin_collection(this.shapes);
 
 
 
@@ -899,22 +936,10 @@ function draw_vertical_wall(context, program_state, height, currentPos, shapes, 
       this.shapes.mario.draw(context, program_state, this.materials.plastic.override( yellow ));
       //console.log(path);
 
-// //	this.shapes.box.draw(context, program_state,  model_transform_square.times(Mat4.scale(Vec.of(2,12,2))), this.materials.plastic);
-// 	var model_transform_slope = model_transform_square.copy();
-// 		model_transform_slope = model_transform_slope.times(Mat4.translation([3, 2, 0]));
-// 	    model_transform_slope = model_transform_slope.times(Mat4.rotation(Math.PI/4, Vec.of(0,0,-1)));
-// 	this.shapes.box.draw(context, program_state, model_transform_slope.times(Mat4.scale(Vec.of(4,10,2))), this.materials.plastic);
-// 	model_transform_square = model_transform_square.times(Mat4.translation([10, 10*Math.sqrt(2), 0]));
-//     for (var i = 0; i < num_cubes; ++i) {
-//         model_transform_square = model_transform_square.times(Mat4.translation([4, 0, 0]));
-// 	  	this.shapes.box.draw(context, program_state,  model_transform_square.times(Mat4.scale(Vec.of(2,2,2))), this.materials.plastic);
-//     }
       this.camera_teleporter.cameras.push( Mat4.inverse(this.shapes.mario.transform_position.times(Mat4.rotation(0 ,[1,0,0])).times(Mat4.translation([ 0,0, 20])) ));
       this.camera_teleporter.cameras.push( Mat4.inverse(this.shapes.mario.transform_position.times(Mat4.rotation(-Math.PI/2 ,[1,0,0])).times(Mat4.translation([ 0,0, 20])) ));
 
       // ***** END TEST SCENE *****
-
-      // Warning: Get rid of the test scene, or else the camera position and movement will not work.
 
 	frame++;
 
