@@ -58,12 +58,12 @@ class physics_component
       	// this.physics_enabled = true;
 	}
 
-     
+
 
 
    }
 
- 
+
 
     apply_impulse(impulse)
     {
@@ -73,7 +73,6 @@ class physics_component
       this.velocity  = this.velocity.plus(Vec.of(impulse[0]/this.mass, impulse[1]/this.mass,impulse[2]/this.mass));
 
     }
-
 
     update_acceration_override(accleration)
     {
@@ -98,6 +97,16 @@ class physics_component
     {
       this.rotation = rotation;
     }
+    update_visibiliy(visibility)
+	{
+		if(visibility == true)
+			this.visible = true;
+		else if (visibility == false)
+			this.visible = false;
+		else
+			console.log("Code Error: Invalid visibility value: visibility should either be true or false.\n")
+	}
+
     compute_next()
     {
 
@@ -120,10 +129,6 @@ class physics_component
 
        this.accleration = Vec.of(0,0,0);
 
-	   //TODO: Coin collection
-	   //need to obtain current postion of Mario somehow
-	  // if (this.shape == "coin" && this.position[1] - mario.position <= ?? && this.position[0] - mario.positon <= ??)
-	  //	this.visible = false;
     }
 
 
@@ -164,7 +169,7 @@ class pushable_box extends physics_component
 
 	move_right()
     {
-		
+
 	   if(this.position[1] == this.ground)
        		this.on_the_ground = true;
        else
@@ -172,7 +177,7 @@ class pushable_box extends physics_component
 
         var tempPosition = this.position.plus(Vec.of(0.1,0.1*Math.tan(this.ground_angle),0));
         var tempGround = -10000;
-     
+
 	   		//this.position[0] = this.ground;
 	   		var i;
 	   		for (i = 0; i < path.length; i++)
@@ -186,10 +191,10 @@ class pushable_box extends physics_component
 
 	   				if( path[i].left_height < path[i].right_height )
 	   					tempGround  =  Math.max(path[i].left_height +   ( tempPosition[0] - path[i].left_x ), tempGround  );
-	   				
+
 	   				else if (path[i].left_height == path[i].right_height)
 	   					tempGround  = Math.max(path[i].left_height, tempGround );
-	   				
+
 	   				else{
 	   					tempGround  =  Math.max(path[i].left_height -  ( tempPosition[0] - path[i].left_x ) + Math.sqrt(2), tempGround );
 	   				}
@@ -199,20 +204,20 @@ class pushable_box extends physics_component
 	   		}
 
 	   		//this.position[1] = this.ground;
-	   
+
 	   	if(tempGround - tempPosition[1] <= 0.6  )
         this.update_position_add(Vec.of(0.1,0.1*Math.tan(this.ground_angle),0));
-      
+
     }
 
     move_left()
     {
-	
+
 	   if(this.position[1] == this.ground)
        		this.on_the_ground = true;
        else
        	  this.on_the_ground = false;
-      	
+
    		var tempPosition = this.position.plus(Vec.of(-0.1,-0.1*Math.tan(this.ground_angle),0));
         var tempGround = -10000;
 
@@ -222,14 +227,14 @@ class pushable_box extends physics_component
 		{
 			if(i == 0)
 				tempGround  = -100000;
-			
+
 			if (tempPosition[0] >= path[i].left_x  && tempPosition[0] < path[i].right_x )
 			{
 
 				if( path[i].left_height < path[i].right_height )
 					tempGround  =  Math.max(path[i].left_height +   ( tempPosition[0] - path[i].left_x ), tempGround  );
 
-				
+
 				else if (path[i].left_height == path[i].right_height)
 					tempGround  = Math.max(path[i].left_height, tempGround );
 				else
@@ -238,11 +243,11 @@ class pushable_box extends physics_component
 		}
 
 	   		//this.position[1] = this.ground;
-	   
+
 	   	if(tempGround - tempPosition[1] <= 0.6  )
         this.update_position_add(Vec.of(-0.1,-0.1*Math.tan(this.ground_angle),0));
 
-      	
+
     }
 
 
@@ -261,17 +266,13 @@ class pushable_box extends physics_component
 	   var TempPosition  = 	this.position.plus(TempVelocity);
 
 
-	   if(TempPosition[1] >= this.ground){
+	   if(TempPosition[1] >= this.ground ){
        	this.position = this.position.plus(TempVelocity);
 	   }
+	   //TODO: prevent it from falling off the ground directly
 
 
        this.accleration = Vec.of(0,0,0);
-
-	   //TODO: Coin collection
-	   //need to obtain current postion of Mario somehow
-	  // if (this.shape == "coin" && this.position[1] - mario.position <= ?? && this.position[0] - mario.positon <= ??)
-	  //	this.visible = false;
     }
 }
 
@@ -298,7 +299,7 @@ class mario extends physics_component
         this.rotation = Vec.of(0,Math.PI/2.0,0);
         var tempPosition = this.position.plus(Vec.of(0.1,0.1*Math.tan(this.ground_angle),0));
         var tempGround = -10000;
-     
+
 	   		//this.position[0] = this.ground;
 	   		var i;
 	   		for (i = 0; i < path.length; i++)
@@ -312,10 +313,10 @@ class mario extends physics_component
 
 	   				if( path[i].left_height < path[i].right_height )
 	   					tempGround  =  Math.max(path[i].left_height +   ( tempPosition[0] - path[i].left_x ), tempGround  );
-	   				
+
 	   				else if (path[i].left_height == path[i].right_height)
 	   					tempGround  = Math.max(path[i].left_height, tempGround );
-	   				
+
 	   				else{
 	   					tempGround  =  Math.max(path[i].left_height -  ( tempPosition[0] - path[i].left_x ) + Math.sqrt(2), tempGround );
 	   				}
@@ -325,10 +326,10 @@ class mario extends physics_component
 	   		}
 
 	   		//this.position[1] = this.ground;
-	   
+
 	   	if(tempGround - tempPosition[1] <= 0.6  )
         this.update_position_add(Vec.of(0.1,0.1*Math.tan(this.ground_angle),0));
-      
+
     }
 
     move_left()
@@ -344,14 +345,14 @@ class mario extends physics_component
 		{
 			if(i == 0)
 				tempGround  = -100000;
-			
+
 			if (tempPosition[0] >= path[i].left_x  && tempPosition[0] < path[i].right_x )
 			{
 
 				if( path[i].left_height < path[i].right_height )
 					tempGround  =  Math.max(path[i].left_height +   ( tempPosition[0] - path[i].left_x ), tempGround  );
 
-				
+
 				else if (path[i].left_height == path[i].right_height)
 					tempGround  = Math.max(path[i].left_height, tempGround );
 				else
@@ -360,11 +361,11 @@ class mario extends physics_component
 		}
 
 	   		//this.position[1] = this.ground;
-	   
+
 	   	if(tempGround - tempPosition[1] <= 0.6  )
         this.update_position_add(Vec.of(-0.1,-0.1*Math.tan(this.ground_angle),0));
 
-      
+
     }
 
 
@@ -387,14 +388,12 @@ class mario extends physics_component
     compute_next()
     {
 
- 	
-	   	
 		var i;
 		for (i = 0; i < path.length; i++)
 		{
 			if(i == 0)
 				this.ground = -100000;
-			
+
 			if (this.position[0] >= path[i].left_x  && this.position[0] < path[i].right_x )
 			{
 
@@ -420,7 +419,7 @@ class mario extends physics_component
 
 		}
 
-	
+
 
        if (this.position[1] > this.ground ){
         this.accleration = this.accleration.plus(Vec.of(0,this.g,0));
@@ -437,7 +436,7 @@ class mario extends physics_component
        	this.position = this.position.plus(TempVelocity);
 
 	   }
-	   else 
+	   else
 	   	this.jumpStart = false;
 
 
@@ -462,10 +461,6 @@ class mario extends physics_component
         	 this.position[1] = this.ground;
        }
 
-
-
-	   //TODO: Coin collection
-	   //need to obtain current postion of Mario somehow
 	  // if (this.shape == "coin" && this.position[1] - mario.position <= ?? && this.position[0] - mario.positon <= ??)
 	  //	this.visible = false;
     }
@@ -483,21 +478,23 @@ class Solar_System extends Scene
                                                         // definitions onto the GPU.  NOTE:  Only do this ONCE per shape.
                                                         // Don't define blueprints for shapes in display() every frame.
 
-                                                // TODO (#1):  Complete this list with any additional shapes you need.
       this.shapes = { 'box' : new Cube(),
 	  				'scene_box': new physics_component(1000 ,"cube"),
 					'scene_box_45': new physics_component(1000, "cube",Vec.of(0,0,0), Vec.of(0,0,Math.PI/4)),
 					'scene_box_135': new physics_component(1000, "cube",Vec.of(0,0,0), Vec.of(0,0,3*Math.PI/4)),
                    'ball_4' : new Subdivision_Sphere( 4 ),
                      'star' : new Planar_Star(),
-                    "interactive_box1" : new physics_component(10, "cube"),
                     "sphere" : new physics_component(10, "sphere"),
                     "mario":  new mario(10, "mario"),
-					"coin": new physics_component(10, "coin"),
+					"coin1": new physics_component(10, "coin"),
+					"coin2": new physics_component(10, "coin"),
+					"coin3": new physics_component(10, "coin"),
+					"coin4": new physics_component(10, "coin"),
+                    "fixedBox" : new physics_component(10, "cube"),
+					"interactive_box1":new pushable_box(10, "cube"),
 					"interactive_box2":new pushable_box(10, "cube"),
 					"interactive_box3":new pushable_box(10, "cube"),
 					"interactive_box4":new pushable_box(10, "cube"),
-					"interactive_box5":new pushable_box(10, "cube"),
 					"interactive_box5":new pushable_box(10, "cube")
 
                       };
@@ -519,9 +516,6 @@ class Solar_System extends Scene
       const black_hole_shader = new Black_Hole_Shader();
       const sun_shader        = new Sun_Shader();
 
-                                              // *** Materials: *** wrap a dictionary of "options" for a shader.
-
-                                              // TODO (#2):  Complete this list with any additional materials you need:
 	  const green = Color.of(0.13,0.5,0.41,1);
       this.materials = { plastic: new Material( phong_shader,
                                     { ambient: 1, diffusivity: 1, specularity: 0, color: green } ),
@@ -562,7 +556,6 @@ class Solar_System extends Scene
     {                                 // make_control_panel(): Sets up a panel of interactive HTML elements, including
                                       // buttons with key bindings for affecting this scene, and live info readouts.
 
-                                 // TODO (#5b): Add a button control.  Provide a callback that flips the boolean value of "this.lights_on".
       this.key_triggered_button("apply_impulse", ["1"],  () => {this.apply_impulse += 1;}   );
       this.new_line();
       this.key_triggered_button("move_left", ["a"],  () => {this.move_left = true; } , '#'+Math.random().toString(9).slice(-6) , () => {this.move_left = false;}  );
@@ -641,10 +634,6 @@ class Solar_System extends Scene
                                     // Variable model_transform will be a local matrix value that helps us position shapes.
                                     // It starts over as the identity every single frame - coordinate axes at the origin.
       let model_transform = Mat4.identity();
-
-                                                  // TODO (#3b):  Use the time-varying value of sun_size to create a scale matrix
-                                                  // for the sun. Also use it to create a color that turns redder as sun_size
-                                                  // increases, and bluer as it decreases.
       const smoothly_varying_ratio = .5 + .5 * Math.sin( 2 * Math.PI * t/10 ),
             sun_size = 1 + 2 * smoothly_varying_ratio,
                  sun = undefined,
@@ -655,16 +644,10 @@ class Solar_System extends Scene
                                                 // *** Lights: *** Values of vector or point lights.  They'll be consulted by
                                                 // the shader when coloring shapes.  See Light's class definition for inputs.
 
-                                                // TODO (#3c):  Replace with a point light located at the origin, with the sun's color
-                                                // (created above).  For the third argument pass in the point light's size.  Use
-                                                // 10 to the power of sun_size.
       program_state.lights = [ new Light( Vec.of( 0,0,0,1 ), Color.of( 1,1,1,1 ), 100000 ) ];
       const modifier = this.lights_on ? { ambient: 0.3 } : { ambient: 0.0 };
 
       // ***** BEGIN TEST SCENE *****
-                                          // TODO:  Delete (or comment out) the rest of display(), starting here:
-
-      //
       const angle = Math.sin( t );
 
       //const light_position = Mat4.rotation( angle, [ 1,0,0 ] ).times( Vec.of( 0,-1,1,0 ) );
@@ -784,6 +767,21 @@ function draw_vertical_wall(context, program_state, height, currentPos, shapes, 
 	currentPos = currentPos.minus(Vec.of(0,cubeSize,0));
 	return currentPos;
 }
+// function check_for_coin_collection(marioPos)
+// {
+// 	   //TODO: Coin collection
+// 	   //need to obtain current postion of Mario somehow
+// 	  // if ( this.position[1] - mario.position <= ?? && this.position[0] - mario.positon <= ??)
+// 	  //	this.visible = false;
+// 	for(i = 0; i < coins.length; ++i)
+// 	{
+// 		var coinPos = coins[i];
+// 		if(coinPos[] - marioPos &&)
+// 		//multiple if statement/ switch??
+// 			this.shapes.coini.update_visibiliy(false);
+// 	}
+// }
+//	check_for_coin_collection(this.shapes.mario.position);
 	const cubeSize = 2;
 	var length = 3;
 	var currentPosition = Vec.of(-17, -6, 0);
@@ -791,19 +789,19 @@ function draw_vertical_wall(context, program_state, height, currentPos, shapes, 
 	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes, this.materials);
 	currentPosition = draw_upwards_slope(context, program_state, length, currentPosition, this.shapes, this.materials);
 	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes, this.materials);
-	this.shapes.interactive_box2.update_position_override(currentPosition.plus(Vec.of(0,2,0)));
-    this.shapes.interactive_box2.draw(context, program_state, this.materials.wooden_box);
+	if(frame == 0)
+		this.shapes.interactive_box1.update_position_override(currentPosition.plus(Vec.of(0,2,0)));
+    this.shapes.interactive_box1.draw(context, program_state, this.materials.wooden_box);
 
     if(frame == 0)
     	boxes.push(currentPosition.plus(Vec.of(0,2,0)));
 	//-------------------------------------------------------------
 	currentPosition = draw_downwards_slope(context, program_state, length, currentPosition, this.shapes, this.materials);
 	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes, this.materials);
-	//TODO: spinning effect
-  	this.shapes.coin.update_rotation_override(Vec.of(0,Math.sin(t),0));
-
-	this.shapes.coin.update_position_override(currentPosition.plus(Vec.of(-cubeSize,2.5*cubeSize,0)));
-    this.shapes.coin.draw(context, program_state, this.materials.gold);
+	//first coin
+  	this.shapes.coin1.update_rotation_override(Vec.of(0,angle,0));
+	this.shapes.coin1.update_position_override(currentPosition.plus(Vec.of(-cubeSize,2.5*cubeSize,0)));
+    this.shapes.coin1.draw(context, program_state, this.materials.gold);
 
     if (frame == 0)
     	coins.push({'position':Vec.of(-cubeSize,2.5*cubeSize,0) });
@@ -812,45 +810,46 @@ function draw_vertical_wall(context, program_state, height, currentPos, shapes, 
 	var tempHeight = 3; //(currently can directly jump to continue) make it 4 when the wooden box works
 	currentPosition = draw_vertical_wall(context, program_state, tempHeight, currentPosition, this.shapes, this.materials);
 	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes, this.materials);
-	//TODO: add some coins here (write a function make coins disappear after "collision"?)
 	//three wooden box in the air
-	this.shapes.interactive_box2.update_position_override(currentPosition.plus(Vec.of(-2*cubeSize,3*cubeSize,0)));
-    this.shapes.interactive_box2.draw(context, program_state, this.materials.wooden_box);
+	this.shapes.fixedBox.update_position_override(currentPosition.plus(Vec.of(-2*cubeSize,3*cubeSize,0)));
+    this.shapes.fixedBox.draw(context, program_state, this.materials.wooden_box);
 //    	if(frame == 0)
 //     	boxes.push(currentPosition.plus(Vec.of(-2*cubeSize,3*cubeSize,0)));
-
-	this.shapes.coin.update_position_override(currentPosition.plus(Vec.of(-2*cubeSize,4.5*cubeSize,0)));
-    this.shapes.coin.draw(context, program_state, this.materials.gold);
+	//draw two coin2 and coin3 above the boxes in the air
+	this.shapes.coin2.update_position_override(currentPosition.plus(Vec.of(-2*cubeSize,4.5*cubeSize,0)));
+  	this.shapes.coin2.update_rotation_override(Vec.of(0,angle,0));
+    this.shapes.coin2.draw(context, program_state, this.materials.gold);
 
     if (frame == 0)
     	coins.push({'position':Vec.of(-2*cubeSize,4.5*cubeSize,0) });
 
-	this.shapes.interactive_box1.update_position_override(currentPosition.plus(Vec.of(-cubeSize,3*cubeSize,0)));
-    this.shapes.interactive_box1.draw(context, program_state, this.materials.wooden_box);
+	this.shapes.fixedBox.update_position_override(currentPosition.plus(Vec.of(-cubeSize,3*cubeSize,0)));
+    this.shapes.fixedBox.draw(context, program_state, this.materials.wooden_box);
 // 	if(frame == 0)
 //     	boxes.push(currentPosition.plus(Vec.of(-cubeSize,3*cubeSize,0)));
-
-
-	this.shapes.interactive_box1.update_position_override(currentPosition.plus(Vec.of(0,3*cubeSize,0)));
-    this.shapes.interactive_box1.draw(context, program_state, this.materials.wooden_box);
+	this.shapes.fixedBox.update_position_override(currentPosition.plus(Vec.of(0,3*cubeSize,0)));
+    this.shapes.fixedBox.draw(context, program_state, this.materials.wooden_box);
     if(frame == 0)
     	boxes.push(currentPosition.plus(Vec.of(0,3*cubeSize,0)));
 
-	this.shapes.coin.update_position_override(currentPosition.plus(Vec.of(0,4.5*cubeSize,0)));
-    this.shapes.coin.draw(context, program_state, this.materials.gold);
+	this.shapes.coin3.update_position_override(currentPosition.plus(Vec.of(0,4.5*cubeSize,0)));
+  	this.shapes.coin3.update_rotation_override(Vec.of(0,angle,0));
+    this.shapes.coin3.draw(context, program_state, this.materials.gold);
     if (frame == 0)
     	coins.push({'position':Vec.of(0,4.5*cubeSize,0) });
 
 
 	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes, this.materials);
 	//Need to push the 2nd box to continue
-	this.shapes.interactive_box1.update_position_override(currentPosition.plus(Vec.of(0,2,0)));
-    this.shapes.interactive_box1.draw(context, program_state, this.materials.wooden_box);
+    if (frame == 0)
+		this.shapes.interactive_box2.update_position_override(currentPosition.plus(Vec.of(0,2,0)));
+    this.shapes.interactive_box2.draw(context, program_state, this.materials.wooden_box);
 //     if(frame == 0)
 //     	boxes.push(currentPosition.plus(Vec.of(0,2,0)));
 
-	this.shapes.coin.update_position_override(currentPosition.plus(Vec.of(0,2.5*cubeSize,0)));
-    this.shapes.coin.draw(context, program_state, this.materials.gold);
+	this.shapes.coin4.update_position_override(currentPosition.plus(Vec.of(0,2.5*cubeSize,0)));
+  	this.shapes.coin4.update_rotation_override(Vec.of(0,angle,0));
+    this.shapes.coin4.draw(context, program_state, this.materials.gold);
 
     if (frame == 0)
     	coins.push({'position':Vec.of(0,2.5*cubeSize,0) });
@@ -989,7 +988,6 @@ class Planar_Star extends Shape
 
       this.arrays.normal        = this.arrays.position.map( p => Vec.of( 0,0,-1 ) );
 
-                                      // TODO (#5a):  Fill in some reasonable texture coordinates for the star:
       // this.arrays.texture_coord = this.arrays.position.map( p =>
     }
 }
@@ -999,7 +997,6 @@ class Gouraud_Shader extends defs.Phong_Shader
 {
   shared_glsl_code()           // ********* SHARED CODE, INCLUDED IN BOTH SHADERS *********
     {
-                          // TODO (#6b2.1):  Copy the Phong_Shader class's implementation of this function, but
                           // change the two "varying" vec3s declared in it to just one vec4, called color.
                           // REMEMBER:
                           // **Varying variables** are passed on from the finished vertex shader to the fragment
@@ -1017,18 +1014,6 @@ class Gouraud_Shader extends defs.Phong_Shader
     }
   vertex_glsl_code()           // ********* VERTEX SHADER *********
     {
-                                          // TODO (#6b2.2):  Copy the Phong_Shader class's implementation of this function,
-                                          // but declare N and vertex_worldspace as vec3s local to function main,
-                                          // since they are no longer scoped as varyings.  Then, copy over the
-                                          // fragment shader code to the end of main() here.  Computing the Phong
-                                          // color here instead of in the fragment shader is called Gouraud
-                                          // Shading.
-                                          // Modify any lines that assign to gl_FragColor, to assign them to "color",
-                                          // the varying you made, instead.  You cannot assign to gl_FragColor from
-                                          // within the vertex shader (because it is a special variable for final
-                                          // fragment shader color), but you can assign to varyings that will be
-                                          // sent as outputs to the fragment shader.
-
       return this.shared_glsl_code() + `
         void main()
           {
@@ -1039,8 +1024,6 @@ class Gouraud_Shader extends defs.Phong_Shader
     {                          // A fragment is a pixel that's overlapped by the current triangle.
                                // Fragments affect the final image or get discarded due to depth.
 
-                               // TODO (#6b2.3):  Leave the main function almost blank, except assign gl_FragColor to
-                               // just equal "color", the varying you made earlier.
       return this.shared_glsl_code() + `
         void main()
           {
@@ -1060,11 +1043,6 @@ class Black_Hole_Shader extends Shader         // Simple "procedural" texture sh
                   // program (which we call the "Program_State").  Send both a material and a program state to the shaders
                   // within this function, one data field at a time, to fully initialize the shader for a draw.
 
-                  // TODO (#EC 1b):  Send the GPU the only matrix it will need for this shader:  The product of the projection,
-                  // camera, and model matrices.  The former two are found in program_state; the latter is directly
-                  // available here.  Finally, pass in the animation_time from program_state. You don't need to allow
-                  // custom materials for this part so you don't need any values from the material object.
-                  // For an example of how to send variables to the GPU, check out the simple shader "Funny_Shader".
 
         // context.uniformMatrix4fv( gpu_addresses.projection_camera_model_transform,
       }
