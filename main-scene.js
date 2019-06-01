@@ -1028,7 +1028,7 @@ function check_for_coin_collection(shapes)
 		let currentPoint = revivePoints[i];
 		if(pos[0] > currentPoint[0])
 			currentRPIndex = i;
-			console.log(currentRPIndex);
+	//		console.log(currentRPIndex);
 	}
 	//death detection
 	if(pos[1] < -20)
