@@ -15,6 +15,7 @@ var path = [];
 var counter = 0;
 var coins = [];
 var boxes = [];
+var interactive_boxes = [];
 var frame = 0;
 //TODO: implement score calculation
 var coinScore = 0;
@@ -260,8 +261,40 @@ class pushable_box extends physics_component
     compute_next()
     {
 
+		var i;
+		for (i = 0; i < path.length; i++)
+		{
+			if(i == 0)
+				this.ground = -100000;
 
-       if (this.gravity_enabled && this.position[1] > this.ground ){
+			if (this.position[0] >= path[i].left_x  && this.position[0] <= path[i].right_x )
+			{
+
+				if( path[i].left_height < path[i].right_height )
+				{
+					this.ground =  Math.max(path[i].left_height +   ( this.position[0] - path[i].left_x ), this.ground );
+					this.ground_angle = path[i].angle;
+				}
+				else if (path[i].left_height == path[i].right_height)
+				{
+					this.ground = Math.max(path[i].left_height, this.ground);
+					this.ground_angle = path[i].angle;
+
+
+				}
+				else{
+					this.ground =  Math.max(path[i].left_height -  ( this.position[0] - path[i].left_x ), this.ground);
+					this.ground_angle = path[i].angle;
+
+				}
+
+			}
+
+		}
+
+
+
+       if (this.position[1] > this.ground ){
         this.accleration = this.accleration.plus(Vec.of(0,this.g,0));
        }
 
@@ -272,13 +305,25 @@ class pushable_box extends physics_component
 	   var TempPosition  = 	this.position.plus(TempVelocity);
 
 
-	   if(TempPosition[1] >= this.ground ){
+	   if(TempPosition[1] >= this.ground){
        	this.position = this.position.plus(TempVelocity);
-	   }
-	   //TODO: prevent it from falling off the ground directly
 
+	   }
 
        this.accleration = Vec.of(0,0,0);
+
+
+       if (this.position[1] < this.ground+1 )
+       {
+       
+        this.velocity = Vec.of(0,0,0);
+        this.position[1] = this.ground+1;
+       }
+       else if ( Math.abs(this.position[1] - this.ground) <= 1.3 && Math.abs(this.position[1] - this.ground) > 1 )
+       {
+        	 this.velocity = Vec.of(0,0,0);
+        	 this.position[1] = this.ground+1;
+       }
     }
 }
 
@@ -314,7 +359,7 @@ class mario extends physics_component
 	   			{
 	   				tempGround  = -100000;
 	   			}
-	   			if (tempPosition[0] >= path[i].left_x  && tempPosition[0] < path[i].right_x )
+	   			if (tempPosition[0] >= path[i].left_x  && tempPosition[0] <= path[i].right_x )
 	   			{
 
 	   				if( path[i].left_height < path[i].right_height )
@@ -679,7 +724,7 @@ function draw_flat_ground (context, program_state, length, currentPos, shapes, m
 	  currentPos = currentPos.plus(Vec.of(2,0,0));
     }
 	  currentPos = currentPos.minus(Vec.of(2,0,0));
-	  right_x = currentPos[0]+1;
+	  right_x = currentPos[0]+Math.sqrt(2);
 	if(counter == 1)
     {
 
@@ -820,8 +865,9 @@ function check_for_coin_collection(shapes)
 	if(frame == 0)
 	{
 		this.shapes.interactive_box1.update_position_override(currentPosition.plus(Vec.of(0,2,0)));
-    	boxes.push(currentPosition.plus(Vec.of(0,2,0)));
+    	interactive_boxes.push(this.shapes.interactive_box1);
 	}
+	//console.log(this.shapes.interactive_box1.position);
     this.shapes.interactive_box1.draw(context, program_state, this.materials.wooden_box);
 
 	currentPosition = draw_downwards_slope(context, program_state, length, currentPosition, this.shapes, this.materials);
@@ -868,6 +914,7 @@ function check_for_coin_collection(shapes)
     if (frame == 0)
 	{
 		this.shapes.interactive_box2.update_position_override(currentPosition.plus(Vec.of(0,2,0)));
+		interactive_boxes.push(this.shapes.interactive_box2);
 //     	boxes.push(currentPosition.plus(Vec.of(0,2,0)));
 	}
     this.shapes.interactive_box2.draw(context, program_state, this.materials.wooden_box);
