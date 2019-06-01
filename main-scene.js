@@ -9,6 +9,7 @@ const { Cube, Subdivision_Sphere, Transforms_Sandbox_Base } = defs;
     // Now we have loaded everything in the files tiny-graphics.js, tiny-graphics-widgets.js, and assignment-4-resources.js.
     // This yielded "tiny", an object wrapping the stuff in the first two files, and "defs" for wrapping all the rest.
 // (Can define Main_Scene's class here)
+const blue = Color.of( 0,0,.5,1 ), yellow = Color.of( .5,.5,0,1 ), white = Color.of(1.0,1.0,1.0,1.0);
 
 var path = [];
 var counter = 0;
@@ -131,13 +132,6 @@ class physics_component
 
 
        this.accleration = Vec.of(0,0,0);
-
-	   //TODO: implement visibility
-	   if(this.visible == false)
-	   {
-	   		this.position = Vec.of(-100,0,0);
-	   }
-
     }
 
 
@@ -154,9 +148,12 @@ class physics_component
 
     draw(context, program_state, material)
     {
-      this.update_transform();
-      this.object_type.draw(context, program_state, this.transforms, material);
-      this.compute_next();
+		if(this.visible)
+		{
+		      this.update_transform();
+		      this.object_type.draw(context, program_state, this.transforms, material);
+		      this.compute_next();
+		}
 //       if(this.shape == "mario")
 //       	console.log(this.ground);
     }
@@ -474,23 +471,19 @@ class mario extends physics_component
 
 
 
- const Main_Scene = //Obj_File_Demo;
-class Solar_System extends Scene
-{                                             // **Solar_System**:  Your Assingment's Scene.
+const Main_Scene = //Obj_File_Demo;
+class Movement_Controls extends Scene
+{
   constructor()
-    {                  // constructor(): Scenes begin by populating initial values like the Shapes and Materials they'll need.
+    {
       super();
-                                                        // At the beginning of our program, load one of each of these shape
-                                                        // definitions onto the GPU.  NOTE:  Only do this ONCE per shape.
-                                                        // Don't define blueprints for shapes in display() every frame.
-
       this.shapes = { 'box' : new Cube(),
 	  				'scene_box': new physics_component(1000 ,"cube"),
 					'scene_box_45': new physics_component(1000, "cube",Vec.of(0,0,0), Vec.of(0,0,Math.PI/4)),
 					'scene_box_135': new physics_component(1000, "cube",Vec.of(0,0,0), Vec.of(0,0,3*Math.PI/4)),
-                   'ball_4' : new Subdivision_Sphere( 4 ),
-                     'star' : new Planar_Star(),
-                    "sphere" : new physics_component(10, "sphere"),
+                   // 'ball_4' : new Subdivision_Sphere( 4 ),
+                     // 'star' : new Planar_Star(),
+                    // "sphere" : new physics_component(10, "sphere"),
                     "mario":  new mario(10, "mario"),
 					"coin1": new physics_component(10, "coin"),
 					"coin2": new physics_component(10, "coin"),
@@ -559,8 +552,9 @@ class Solar_System extends Scene
 
     }
   make_control_panel()
-    {                                 // make_control_panel(): Sets up a panel of interactive HTML elements, including
-                                      // buttons with key bindings for affecting this scene, and live info readouts.
+    {
+		// make_control_panel(): Sets up a panel of interactive HTML elements, including
+		// buttons with key bindings for affecting this scene, and live info readouts.
 
       this.key_triggered_button("apply_impulse", ["1"],  () => {this.apply_impulse += 1;}   );
       this.new_line();
@@ -570,10 +564,6 @@ class Solar_System extends Scene
       this.key_triggered_button("jump", [" "],  () => {this.jump += 1; } , '#'+Math.random().toString(9).slice(-6) );
       this.new_line();
 	  this.key_triggered_button("push", ["f"],  () => {this.push = true; } , '#'+Math.random().toString(9).slice(-6),  );
-
-
-
-
     }
 
 
@@ -635,7 +625,6 @@ class Solar_System extends Scene
       Start coding down here!!!!
       **********************************/
 
-      const blue = Color.of( 0,0,.5,1 ), yellow = Color.of( .5,.5,0,1 ), white = Color.of(1.0,1.0,1.0,1.0);
 
                                     // Variable model_transform will be a local matrix value that helps us position shapes.
                                     // It starts over as the identity every single frame - coordinate axes at the origin.
