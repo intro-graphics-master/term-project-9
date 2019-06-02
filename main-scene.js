@@ -21,6 +21,9 @@ var ground_boxes = [];
 var sky_boxes = [];
 var frame = 0;
 var bullet_material;
+var delta;
+var mario_pos;
+
 //TODO: implement score calculation
  var coinScore = 0;
 //reviving structure
@@ -392,7 +395,7 @@ class pushable_box extends physics_component
 
 
        this.velocity = this.velocity.plus(this.accleration);
-       var TempVelocity = this.velocity.times(1);
+       var TempVelocity = this.velocity.times(delta/17.0);
 
        // TODO: compute drag
 	   var TempPosition  = 	this.position.plus(TempVelocity);
@@ -463,7 +466,7 @@ class mario extends physics_component
 	shoot()
 	{
 		var bullet_transforms;
-		console.log(this.bullets_transform.length);
+
 		while(this.bullets_transform.length > 5)
 		{
 			this.bullets_transform.shift();
@@ -651,7 +654,7 @@ class mario extends physics_component
 			if(i == 0)
 				this.ground = -100000;
 
-			if (this.position[0] >= path[i].left_x  && this.position[0] < path[i].right_x )
+			if (this.position[0] >= path[i].left_x  && this.position[0] < path[i].right_x)
 			{
 
 				if( path[i].left_height < path[i].right_height )
@@ -704,7 +707,7 @@ class mario extends physics_component
        }
 
        this.velocity = this.velocity.plus(this.accleration);
-       var TempVelocity = this.velocity.times(1);
+       var TempVelocity = this.velocity.times(delta/17.0);
 
        // TODO: compute drag
 	   var TempPosition  = 	this.position.plus(TempVelocity);
@@ -733,7 +736,7 @@ class mario extends physics_component
         this.position[1] = this.ground;
        }
        else if ( Math.abs(this.position[1] - this.ground) <= 0.4  && Math.abs(this.position[1] - this.ground) > 0  && this.jumpStart == false)
-//       else if ( Math.abs(this.position[1] - this.ground) > 0  && this.jumpStart == false)
+       //else if ( Math.abs(this.position[1] - this.ground) > 0   && this.jumpStart == false)
        {
         	 this.velocity = Vec.of(0,0,0);
         	 this.jump_count = 0;
@@ -796,6 +799,66 @@ class AI extends mario
 	constructor()
 	{
 		super();
+		this.tempPosition = this.position;
+		this.lastMove = "";
+	}
+
+	randomMove()
+	{
+		if(mario_pos == undefined)
+			return;
+		var num = Math.random();
+		var num2 = Math.random();
+		if(num < 0.9) // move closer
+		{
+			if(this.position[0] > mario_pos[0])
+			{
+				if(num2 > 0.3)
+					this.move_left();
+				else
+					this.jump();
+			}
+			else
+			{
+				if(num2 > 0.3)
+					this.move_right();
+				else
+					this.jump();
+			}
+		}
+		else //move far away
+		{
+			if(this.position[0] > mario_pos[0])
+			{
+				if(num2 > 0.3)
+					this.move_right();
+				else
+					this.jump();
+			}
+			else
+			{
+				if(num2 > 0.3)
+					this.move_left();
+				else
+					this.jump();
+			}
+		}
+
+	}
+
+	placeAI()
+	{
+
+	}
+
+	draw(context, program_state, material)
+	{
+		if(this.visible)
+		{
+			this.update_transform();
+			this.object_type.draw(context, program_state, this.transforms, material.override(yellow));
+			this.compute_next();
+		}
 	}
 
 }
@@ -832,6 +895,7 @@ class Movement_Controls extends Scene
 					"interactive_box4":new pushable_box(10, "cube"),
 					"interactive_box5":new pushable_box(10, "cube"),
 					"plank":new physics_component(100, "cube"),
+					"AI": new AI(10, "mario")
 
                       };
 
@@ -953,6 +1017,8 @@ class Movement_Controls extends Scene
                                                                       // Find how much time has passed in seconds; we can use
                                                                       // time as an input when calculating new transforms:
       const t = program_state.animation_time / 1000;
+      delta = program_state.animation_delta_time;
+
 
                                                   // Have to reset this for each frame:
       this.camera_teleporter.cameras = [];
@@ -1138,7 +1204,6 @@ function draw_plank (context, program_state, length, currentPos, shapes, materia
 	  right_x = currentPos[0]+scaleSizeX;
 	if(counter == 1)
     {
-
     	var temp = currentPos;
     	temp = currentPos.plus(Vec.of(2,0,0));
     	shapes.plank.update_position_override(temp);
@@ -1390,6 +1455,9 @@ function check_for_coin_collection(shapes)
 		this.shapes.mario.jumpStart = false;
 	  	this.shapes.mario.update_position_override(revivePoints[currentRPIndex]);
 	}
+
+	this.shapes.AI.randomMove();
+	this.shapes.AI.draw(context, program_state, this.materials.plastic);
       // this.shapes.mario.draw(context, program_state, this.materials.plastic.override( yellow ));
       //draw mario
       this.shapes.mario.draw(context, program_state, this.materials.plastic);
@@ -1400,6 +1468,7 @@ function check_for_coin_collection(shapes)
       // ***** END TEST SCENE *****
 
 	frame=1;
+	mario_pos = this.shapes.mario.position;
 
     }
 }
