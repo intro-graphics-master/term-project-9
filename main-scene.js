@@ -15,7 +15,8 @@ var path = [];
 var counter = 0;
 var coins = [];
 var boxes = [];
-var interactive_boxes = [];
+var ground_boxes = [];
+var sky_boxes = [];
 var frame = 0;
 //TODO: implement score calculation
  var coinScore = 0;
@@ -172,8 +173,7 @@ class physics_component
 		      this.object_type.draw(context, program_state, this.transforms, material);
 		      this.compute_next();
 		}
-//       if(this.shape == "mario")
-//       	console.log(this.ground);
+
     }
 
 }
@@ -188,19 +188,22 @@ class pushable_box extends physics_component
 
       	this.gravity_enabled = true;
       	this.on_the_ground = true;
+      	//this.rotation=Vec.of(0,0,Math.PI/4);
 
 	}
 
 	move_right()
     {
 
-	   if(this.position[1] == this.ground)
-       		this.on_the_ground = true;
-       else
-       	  this.on_the_ground = false;
-
+// 	   if(this.position[1] == this.ground+1)
+//        		this.on_the_ground = true;
+//        else
+//        	  this.on_the_ground = false;
+		
         var tempPosition = this.position.plus(Vec.of(0.1,0.1*Math.tan(this.ground_angle),0));
         var tempGround = -10000;
+        var tempRotation = 0;
+        var oldTempGround= -1000;
 
 	   		//this.position[0] = this.ground;
 	   		var i;
@@ -210,17 +213,29 @@ class pushable_box extends physics_component
 	   			{
 	   				tempGround  = -100000;
 	   			}
-	   			if (tempPosition[0] >= path[i].left_x  && tempPosition[0] < path[i].right_x )
+	   			if (tempPosition[0]-1 >= path[i].left_x  && tempPosition[0] < path[i].right_x )
 	   			{
 
 	   				if( path[i].left_height < path[i].right_height )
+	   				{
 	   					tempGround  =  Math.max(path[i].left_height +   ( tempPosition[0] - path[i].left_x ), tempGround  );
+						if(oldTempGround != tempGround)
+							tempRotation = Math.PI/4;
+						oldTempGround = tempGround;
+	   				}
 
 	   				else if (path[i].left_height == path[i].right_height)
+	   				{
 	   					tempGround  = Math.max(path[i].left_height, tempGround );
+	   					tempRotation = 0;
+	   					oldTempGround = tempGround;
+	   				}
 
 	   				else{
-	   					tempGround  =  Math.max(path[i].left_height -  ( tempPosition[0] - path[i].left_x ) + Math.sqrt(2), tempGround );
+	   					tempGround  =  Math.max(path[i].left_height -  ( tempPosition[0] - path[i].left_x ), tempGround );
+						if(oldTempGround != tempGround)
+							tempRotation = -Math.PI/4;
+						oldTempGround = tempGround;
 	   				}
 
 	   			}
@@ -229,21 +244,38 @@ class pushable_box extends physics_component
 
 	   		//this.position[1] = this.ground;
 
-	   	if(tempGround - tempPosition[1] <= 0.6  )
-        this.update_position_add(Vec.of(0.1,0.1*Math.tan(this.ground_angle),0));
+	  
+		for(i = 0;  i< ground_boxes.length; i++)
+		{
+			if(ground_boxes[i].position[0] == this.position[0] && ground_boxes[i].position[1] == this.position[1] && ground_boxes[i].position[2] == this.position[2])
+				continue;
+			if(tempPosition[0] >= ground_boxes[i].position[0]-1 &&  tempPosition[0] <= ground_boxes[i].position[0]+1 )
+			{
+				tempGround = Math.max(ground_boxes[i].position[1]+2, tempGround);
+
+			}
+		}
+
+	   	if(tempGround - (tempPosition[1]+1) <= 0.6  ){
+
+        	this.update_position_add(Vec.of(0.1,0.1*Math.tan(this.ground_angle),0));
+        	this.rotation[2] = tempRotation;
+	   	}
 
     }
 
     move_left()
     {
 
-	   if(this.position[1] == this.ground)
-       		this.on_the_ground = true;
-       else
-       	  this.on_the_ground = false;
+// 	   if(this.position[1] == this.ground)
+//        		this.on_the_ground = true;
+//        else
+//        	  this.on_the_ground = false;
 
    		var tempPosition = this.position.plus(Vec.of(-0.1,-0.1*Math.tan(this.ground_angle),0));
         var tempGround = -10000;
+        var oldTempGround= -1000;
+        var tempRotation = 0;
 
 	   		//this.position[0] = this.ground;
 		var i;
@@ -254,22 +286,41 @@ class pushable_box extends physics_component
 
 			if (tempPosition[0] >= path[i].left_x  && tempPosition[0] < path[i].right_x )
 			{
+			
 
-				if( path[i].left_height < path[i].right_height )
+				if( path[i].left_height < path[i].right_height ){
 					tempGround  =  Math.max(path[i].left_height +   ( tempPosition[0] - path[i].left_x ), tempGround  );
+					if(oldTempGround != tempGround)
+					tempRotation = Math.PI/4;
+					oldTempGround = tempGround;
+				
+				}
 
 
 				else if (path[i].left_height == path[i].right_height)
+				{
 					tempGround  = Math.max(path[i].left_height, tempGround );
-				else
-					tempGround  =  Math.max(path[i].left_height -  ( tempPosition[0] - path[i].left_x ) + Math.sqrt(2), tempGround );
+
+					oldTempGround = tempGround;
+				}
+				else{
+					tempGround  =  Math.max(path[i].left_height -  ( tempPosition[0] - path[i].left_x ) , tempGround );
+					if(oldTempGround != tempGround)
+						tempRotation = -Math.PI/4;
+					oldTempGround = tempGround;
+				}
 			}
 		}
 
 	   		//this.position[1] = this.ground;
-
-	   	if(tempGround - tempPosition[1] <= 0.6  )
-        this.update_position_add(Vec.of(-0.1,-0.1*Math.tan(this.ground_angle),0));
+		
+	   	if(tempGround - (tempPosition[1]+1) <= 0.6  ){
+        	this.update_position_add(Vec.of(-0.1,-0.1*Math.tan(this.ground_angle),0));
+        	this.rotation[2] = tempRotation;
+//         	if (tempRotation == -Math.PI/4)
+//         	this.update_position_add(Vec.of(-1,2,0));
+       
+	   	}
 
 
     }
@@ -278,6 +329,9 @@ class pushable_box extends physics_component
     compute_next()
     {
 
+
+		var offset = Vec.of(0,0,0);
+		var tempGround = -10000;
 		var i;
 		for (i = 0; i < path.length; i++)
 		{
@@ -289,19 +343,28 @@ class pushable_box extends physics_component
 
 				if( path[i].left_height < path[i].right_height )
 				{
-					this.ground =  Math.max(path[i].left_height +   ( this.position[0] - path[i].left_x ), this.ground );
+					this.ground =  Math.max(path[i].left_height +   ( this.position[0] - path[i].left_x ) , this.ground );
 					this.ground_angle = path[i].angle;
+					if(tempGround != this.ground)
+						offset = Vec.of(0,0,0);
+					tempGround = this.ground;
+
 				}
 				else if (path[i].left_height == path[i].right_height)
 				{
-					this.ground = Math.max(path[i].left_height, this.ground);
+					this.ground = Math.max(path[i].left_height - 1, this.ground);
 					this.ground_angle = path[i].angle;
-
+// 					if(tempGround != this.ground)
+// 						offset = Vec.of(0,0,0);
+					tempGround = this.ground;
 
 				}
 				else{
-					this.ground =  Math.max(path[i].left_height -  ( this.position[0] - path[i].left_x ), this.ground);
+					this.ground =  Math.max(path[i].left_height -  ( this.position[0] - path[i].left_x ) , this.ground);
 					this.ground_angle = path[i].angle;
+// 					if(tempGround != this.ground)
+// 						offset = Vec.of(0,0.2,0);
+					tempGround = this.ground;
 
 				}
 
@@ -310,10 +373,19 @@ class pushable_box extends physics_component
 		}
 
 
+// 	   if(this.ground +1 <= this.position[1])
+// 	   		this.on_the_ground = true;
 
-       if (this.position[1] > this.ground ){
+
+
+       if (this.position[1]+1 > this.ground){
         this.accleration = this.accleration.plus(Vec.of(0,this.g,0));
+    
        }
+
+
+
+
 
        this.velocity = this.velocity.plus(this.accleration);
        var TempVelocity = this.velocity.times(1);
@@ -322,25 +394,33 @@ class pushable_box extends physics_component
 	   var TempPosition  = 	this.position.plus(TempVelocity);
 
 
-	   if(TempPosition[1] >= this.ground){
+	   if(TempPosition[1]+1  > this.ground ){
        	this.position = this.position.plus(TempVelocity);
+ 
 
 	   }
 
        this.accleration = Vec.of(0,0,0);
 
 
-       if (this.position[1] < this.ground+1 )
+       if (this.position[1] < this.ground+0.1 )
        {
 
         this.velocity = Vec.of(0,0,0);
-        this.position[1] = this.ground+1;
+        this.position[1] = this.ground;
        }
        else if ( Math.abs(this.position[1] - this.ground) <= 1.3 && Math.abs(this.position[1] - this.ground) > 1 )
        {
         	 this.velocity = Vec.of(0,0,0);
-        	 this.position[1] = this.ground+1;
+        	 this.position[1] = this.ground;
+
        }
+
+       this.position = this.position.plus(offset);
+
+    
+
+
     }
 }
 
@@ -395,7 +475,18 @@ class mario extends physics_component
 
 	   		//this.position[1] = this.ground;
 
-	   	if(tempGround - tempPosition[1] <= 0.6  )
+		for(i = 0;  i< ground_boxes.length; i++)
+		{
+			if(tempPosition[0] >= ground_boxes[i].position[0]-1 &&  tempPosition[0] <= ground_boxes[i].position[0]+1 )
+			{
+				tempGround = Math.max(ground_boxes[i].position[1]+2, tempGround);
+
+			}
+		}
+
+	
+		
+	   	if(tempGround - tempPosition[1] <= 0.55  )
         this.update_position_add(Vec.of(0.1,0.1*Math.tan(this.ground_angle),0));
 
     }
@@ -428,10 +519,22 @@ class mario extends physics_component
 			}
 		}
 
+
+		for(i = 0;  i< ground_boxes.length; i++)
+		{
+			if(tempPosition[0] >= ground_boxes[i].position[0]-1 &&  tempPosition[0] <= ground_boxes[i].position[0]+1 )
+			{
+				tempGround = Math.max(ground_boxes[i].position[1]+2, tempGround);
+			}
+		}
+
 	   		//this.position[1] = this.ground;
 
 	   	if(tempGround - tempPosition[1] <= 0.6  )
-        this.update_position_add(Vec.of(-0.1,-0.1*Math.tan(this.ground_angle),0));
+        	this.update_position_add(Vec.of(-0.1,-0.1*Math.tan(this.ground_angle),0));
+//         else if(tempPosition[1] - tempGround < 2.5)
+//         	this.update_position_override(Vec.of(-0.1,this.g,0))
+        	
 
 
     }
@@ -446,10 +549,41 @@ class mario extends physics_component
         else
             return;
 
-
+	
         this.jumpStart = true;
         this.accleration = Vec.of(0,0,0);
         this.update_velocity_override(Vec.of(0,0.2,0));
+    }
+
+    push()
+    {
+		var i = 0;
+		for(i = 0;  i< ground_boxes.length; i++)
+		{
+			if(this.position[0] >= ground_boxes[i].position[0]-1.5 &&  this.position[0] <= ground_boxes[i].position[0]+1.5 )
+			{
+				
+				if( Math.abs(this.rotation[1] - Math.PI/2.0) <= 0.01 )
+				{
+					if(this.position[0] < ground_boxes[i].position[0]-1)
+					{
+						ground_boxes[i].move_right();
+						this.move_right();
+					}
+				
+				}
+
+				else if(Math.abs(this.rotation[1] + Math.PI/2.0) <= 0.01 )
+				{
+					if(this.position[0] > ground_boxes[i].position[0]+1)
+					{
+						ground_boxes[i].move_left();
+						this.move_left();
+					}
+				
+				}
+			}
+		}    	
     }
 
 
@@ -488,6 +622,27 @@ class mario extends physics_component
 		}
 
 
+		for(i = 0;  i< ground_boxes.length; i++)
+		{
+			if(this.position[0] >= ground_boxes[i].position[0]-1 &&  this.position[0] <= ground_boxes[i].position[0]+1 )
+			{
+				if(ground_boxes[i].on_the_ground)
+				this.ground  = Math.max(ground_boxes[i].position[1]+3, this.ground );
+			}
+		}
+
+
+	   for(i = 0; i< sky_boxes.length; i++)
+       {
+       	  if(this.position[0] >= sky_boxes[i].position[0] - 1 &&  this.position[0] <= sky_boxes[i].position[0] + 1 && this.position[1] > sky_boxes[i].position[1]+2.5)
+       	  {
+       	  	this.ground =  Math.max(sky_boxes[i].position[1]+3, this.ground);
+      
+       	  }
+       	 	
+       }
+
+	
 
        if (this.position[1] > this.ground ){
         this.accleration = this.accleration.plus(Vec.of(0,this.g,0));
@@ -522,12 +677,27 @@ class mario extends physics_component
         this.jump_count = 0;
         this.position[1] = this.ground;
        }
-       else if ( Math.abs(this.position[1] - this.ground) <= 0.3 && Math.abs(this.position[1] - this.ground) > 0  && this.jumpStart == false)
+       //else if ( Math.abs(this.position[1] - this.ground) <= 0.4  && Math.abs(this.position[1] - this.ground) > 0  && this.jumpStart == false)
+       else if ( Math.abs(this.position[1] - this.ground) > 0  && this.jumpStart == false)
        {
         	 this.velocity = Vec.of(0,0,0);
         	 this.jump_count = 0;
         	 this.position[1] = this.ground;
        }
+
+
+       //check for height
+       for(i = 0; i< sky_boxes.length; i++)
+       {
+       	 if(this.position[0] >= sky_boxes[i].position[0] - 1 &&  this.position[0] <= sky_boxes[i].position[0] + 1 && this.position[1] < sky_boxes[i].position[1])
+       	 if(this.position[1] > sky_boxes[i].position[1]-2)  
+       	 {
+       	 	this.position[1] = sky_boxes[i].position[1]-2;
+
+       	 }
+       }
+
+       console.log();
     }
 }
 
@@ -551,7 +721,9 @@ class Movement_Controls extends Scene
 					"coin2": new physics_component(10, "coin"),
 					"coin3": new physics_component(10, "coin"),
 					"coin4": new physics_component(10, "coin"),
-                    "fixedBox" : new physics_component(10, "cube"),
+                    "fixedBox1" : new physics_component(10, "cube"),
+                    "fixedBox2" : new physics_component(10, "cube"),
+                    "fixedBox3" : new physics_component(10, "cube"),
 					"interactive_box1":new pushable_box(10, "cube"),
 					"interactive_box2":new pushable_box(10, "cube"),
 					"interactive_box3":new pushable_box(10, "cube"),
@@ -560,7 +732,9 @@ class Movement_Controls extends Scene
 					"plank":new physics_component(100, "cube")
                       };
       // *** Shaders ***
-
+		sky_boxes.push( this.shapes.fixedBox1);
+		sky_boxes.push( this.shapes.fixedBox2);
+		sky_boxes.push( this.shapes.fixedBox3);
       // NOTE: The 2 in each shader argument refers to the max
       // number of lights, which must be known at compile time.
 
@@ -912,13 +1086,9 @@ function check_for_coin_collection(shapes)
 	currentPosition = draw_upwards_slope(context, program_state, length, currentPosition, this.shapes, this.materials);
 	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes, this.materials);
 	//first interactive box
-	if(frame == 0)
-	{
-		this.shapes.interactive_box1.update_position_override(currentPosition.plus(Vec.of(0,2,0)));
-    	interactive_boxes.push(this.shapes.interactive_box1);
-	}
-	//console.log(this.shapes.interactive_box1.position);
-    this.shapes.interactive_box1.draw(context, program_state, this.materials.wooden_box);
+
+	var temp1 = currentPosition.plus(Vec.of(0,2.1,0));
+
 
 	currentPosition = draw_downwards_slope(context, program_state, length, currentPosition, this.shapes, this.materials);
 	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes, this.materials);
@@ -935,8 +1105,8 @@ function check_for_coin_collection(shapes)
 	currentPosition = draw_vertical_wall(context, program_state, tempHeight, currentPosition, this.shapes, this.materials);
 	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes, this.materials);
 	//three wooden box in the air
-	this.shapes.fixedBox.update_position_override(currentPosition.plus(Vec.of(-2*cubeSize,3*cubeSize,0)));
-    this.shapes.fixedBox.draw(context, program_state, this.materials.wooden_box);
+	this.shapes.fixedBox1.update_position_override(currentPosition.plus(Vec.of(-2*cubeSize,3*cubeSize,0)));
+    this.shapes.fixedBox1.draw(context, program_state, this.materials.wooden_box);
 	//draw second coin above the boxes in the air
 	if (frame == 0)
 	{
@@ -946,10 +1116,10 @@ function check_for_coin_collection(shapes)
   	this.shapes.coin2.update_rotation_override(Vec.of(0,angle,0));
     this.shapes.coin2.draw(context, program_state, this.materials.gold);
 	//keep drawing the other two boxes
-	this.shapes.fixedBox.update_position_override(currentPosition.plus(Vec.of(-cubeSize,3*cubeSize,0)));
-    this.shapes.fixedBox.draw(context, program_state, this.materials.wooden_box);
-	this.shapes.fixedBox.update_position_override(currentPosition.plus(Vec.of(0,3*cubeSize,0)));
-    this.shapes.fixedBox.draw(context, program_state, this.materials.wooden_box);
+	this.shapes.fixedBox2.update_position_override(currentPosition.plus(Vec.of(-cubeSize,3*cubeSize,0)));
+    this.shapes.fixedBox2.draw(context, program_state, this.materials.wooden_box);
+	this.shapes.fixedBox3.update_position_override(currentPosition.plus(Vec.of(0,3*cubeSize,0)));
+    this.shapes.fixedBox3.draw(context, program_state, this.materials.wooden_box);
 	//draw third coin above the boxes in the air
 	if (frame == 0)
 	{
@@ -961,13 +1131,9 @@ function check_for_coin_collection(shapes)
 	//ground
 	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes, this.materials);
 	//Need to push the 2nd interactive box to continue
-    if (frame == 0)
-	{
-		this.shapes.interactive_box2.update_position_override(currentPosition.plus(Vec.of(0,2,0)));
-		interactive_boxes.push(this.shapes.interactive_box2);
-//     	boxes.push(currentPosition.plus(Vec.of(0,2,0)));
-	}
-    this.shapes.interactive_box2.draw(context, program_state, this.materials.wooden_box);
+
+	var temp2 = currentPosition.plus(Vec.of(0,2.1,0));
+
 	//4th coin
 	if (frame == 0)
 	{
@@ -995,6 +1161,25 @@ function check_for_coin_collection(shapes)
   	// this.shapes.plank.draw(context, program_state, this.materials.wood);
 	currentPosition = draw_flat_ground(context, program_state, length, currentPosition.plus(Vec.of(length*cubeSize, 5*cubeSize,0)), this.shapes, this.materials);
 
+
+
+	if(frame == 0 )
+	{
+		this.shapes.interactive_box1.update_position_override(temp1);
+    	ground_boxes.push(this.shapes.interactive_box1);
+	}
+	
+    this.shapes.interactive_box1.draw(context, program_state, this.materials.wooden_box);
+
+
+     if (frame == 0)
+	{
+		this.shapes.interactive_box2.update_position_override(temp2);
+		ground_boxes.push(this.shapes.interactive_box2);
+//     	boxes.push(currentPosition.plus(Vec.of(0,2,0)));
+	}
+    this.shapes.interactive_box2.draw(context, program_state, this.materials.wooden_box);
+
 	   if(this.apply_impulse > 0)
       {
         this.shapes.mario.apply_impulse(Vec.of(100.0,0.0,0.0));
@@ -1018,6 +1203,12 @@ function check_for_coin_collection(shapes)
       	this.jump -= 1;
       }
 
+      if(this.push )
+      {
+      	this.push = false;
+      	this.shapes.mario.push();
+      }
+
       var pos = this.shapes.mario.position;
       var factor = 1;
 	  check_for_coin_collection(this.shapes);
@@ -1028,22 +1219,22 @@ function check_for_coin_collection(shapes)
 		let currentPoint = revivePoints[i];
 		if(pos[0] > currentPoint[0])
 			currentRPIndex = i;
-	//		console.log(currentRPIndex);
+
 	}
 	//death detection
-	if(pos[1] < -20)
+	if(pos[1] < -30)
 	{
 	  	this.shapes.mario.update_position_override(revivePoints[currentRPIndex]);
 	}
       this.shapes.mario.draw(context, program_state, this.materials.plastic.override( yellow ));
-      //console.log(path);
+  
 
       this.camera_teleporter.cameras.push( Mat4.inverse(this.shapes.mario.transform_position.times(Mat4.rotation(0 ,[1,0,0])).times(Mat4.translation([ 0,0, 20])) ));
       this.camera_teleporter.cameras.push( Mat4.inverse(this.shapes.mario.transform_position.times(Mat4.rotation(-Math.PI/2 ,[1,0,0])).times(Mat4.translation([ 0,0, 20])) ));
 
       // ***** END TEST SCENE *****
 
-	frame++;
+	frame=1;
 
     }
 }
