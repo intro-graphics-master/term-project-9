@@ -11,7 +11,7 @@ const { Cube, Subdivision_Sphere, Transforms_Sandbox_Base } = defs;
     // Now we have loaded everything in the files tiny-graphics.js, tiny-graphics-widgets.js, and assignment-4-resources.js.
     // This yielded "tiny", an object wrapping the stuff in the first two files, and "defs" for wrapping all the rest.
 // (Can define Main_Scene's class here)
-const blue = Color.of( 0,0,.5,1 ), yellow = Color.of( .5,.5,0,1 ), white = Color.of(1.0,1.0,1.0,1.0);
+const blue = Color.of( 0,0,.5,1 ), yellow = Color.of( .5,.5,0,1 ), white = Color.of(1.0,1.0,1.0,1.0), red = Color.of(1.0, 0.0, 0.0,1), faceColor = Color.of(0.96, 0.92, 0.84,1), brown = Color.of(0.62, 0.31, 0.0, 1);
 
 var path = [];
 var counter = 0;
@@ -202,7 +202,7 @@ class pushable_box extends physics_component
 //        		this.on_the_ground = true;
 //        else
 //        	  this.on_the_ground = false;
-		
+
         var tempPosition = this.position.plus(Vec.of(0.1,0.1*Math.tan(this.ground_angle),0));
         var tempGround = -10000;
         var tempRotation = 0;
@@ -247,7 +247,7 @@ class pushable_box extends physics_component
 
 	   		//this.position[1] = this.ground;
 
-	  
+
 		for(i = 0;  i< ground_boxes.length; i++)
 		{
 			if(ground_boxes[i].position[0] == this.position[0] && ground_boxes[i].position[1] == this.position[1] && ground_boxes[i].position[2] == this.position[2])
@@ -289,14 +289,14 @@ class pushable_box extends physics_component
 
 			if (tempPosition[0] >= path[i].left_x  && tempPosition[0] < path[i].right_x )
 			{
-			
+
 
 				if( path[i].left_height < path[i].right_height ){
 					tempGround  =  Math.max(path[i].left_height +   ( tempPosition[0] - path[i].left_x ), tempGround  );
 					if(oldTempGround != tempGround)
 					tempRotation = Math.PI/4;
 					oldTempGround = tempGround;
-				
+
 				}
 
 
@@ -316,13 +316,13 @@ class pushable_box extends physics_component
 		}
 
 	   		//this.position[1] = this.ground;
-		
+
 	   	if(tempGround - (tempPosition[1]+1) <= 0.6  ){
         	this.update_position_add(Vec.of(-0.1,-0.1*Math.tan(this.ground_angle),0));
         	this.rotation[2] = tempRotation;
 //         	if (tempRotation == -Math.PI/4)
 //         	this.update_position_add(Vec.of(-1,2,0));
-       
+
 	   	}
 
 
@@ -383,7 +383,7 @@ class pushable_box extends physics_component
 
        if (this.position[1]+1 > this.ground){
         this.accleration = this.accleration.plus(Vec.of(0,this.g,0));
-    
+
        }
 
 
@@ -399,7 +399,7 @@ class pushable_box extends physics_component
 
 	   if(TempPosition[1]+1  > this.ground ){
        	this.position = this.position.plus(TempVelocity);
- 
+
 
 	   }
 
@@ -421,7 +421,7 @@ class pushable_box extends physics_component
 
        this.position = this.position.plus(offset);
 
-    
+
 
 
     }
@@ -434,6 +434,14 @@ class mario extends physics_component
 	{
 		super();
 		this.object_type = new Shape_From_File( "assets/mario/mario.obj" );
+		this.obj_redhead = new Shape_From_File( "assets/mario/red.obj" );
+		this.obj_face = new Shape_From_File( "assets/mario/face.obj" );
+		this.obj_chest = new Shape_From_File( "assets/mario/chest.obj" );
+		this.obj_body = new Shape_From_File( "assets/mario/bluebody.obj" );
+		this.obj_hands = new Shape_From_File( "assets/mario/whitehands.obj" );
+		this.obj_feet = new Shape_From_File( "assets/mario/brownfeet.obj" );
+
+
       	this.rotation = Vec.of(0,Math.PI/2.0,0);
       	this.position = Vec.of(-17,-3,0);
       	this.controllable = true;
@@ -448,7 +456,7 @@ class mario extends physics_component
       	//new Subdivision_Sphere( 6 );
 
       	this.bullet_material = bullet_material;
-      	 
+
 	}
 
 	shoot()
@@ -459,7 +467,7 @@ class mario extends physics_component
 		{
 			this.bullets_transform.shift();
 			this.bullets.shift();
-			this.bullet_speed.shift();	
+			this.bullet_speed.shift();
 		}
 
 		this.update_transform();
@@ -476,11 +484,11 @@ class mario extends physics_component
 		}
 
 		this.bullets_transform.push(bullet_transforms);
-		
-		this.bullets.push(new Subdivision_Sphere( 6 ));
-		
 
-		
+		this.bullets.push(new Subdivision_Sphere( 6 ));
+
+
+
 
 	}
 
@@ -528,8 +536,8 @@ class mario extends physics_component
 			}
 		}
 
-	
-		
+
+
 	   	if(tempGround - tempPosition[1] <= 0.55  )
         this.update_position_add(Vec.of(0.1,0.1*Math.tan(this.ground_angle),0));
 
@@ -578,7 +586,7 @@ class mario extends physics_component
         	this.update_position_add(Vec.of(-0.1,-0.1*Math.tan(this.ground_angle),0));
 //         else if(tempPosition[1] - tempGround < 2.5)
 //         	this.update_position_override(Vec.of(-0.1,this.g,0))
-        	
+
 
 
     }
@@ -593,7 +601,7 @@ class mario extends physics_component
         else
             return;
 
-	
+
         this.jumpStart = true;
         this.accleration = Vec.of(0,0,0);
         this.update_velocity_override(Vec.of(0,0.2,0));
@@ -606,7 +614,7 @@ class mario extends physics_component
 		{
 			if(this.position[0] >= ground_boxes[i].position[0]-1.5 &&  this.position[0] <= ground_boxes[i].position[0]+1.5 )
 			{
-				
+
 				if( Math.abs(this.rotation[1] - Math.PI/2.0) <= 0.01 )
 				{
 					if(this.position[0] < ground_boxes[i].position[0]-1)
@@ -614,7 +622,7 @@ class mario extends physics_component
 						ground_boxes[i].move_right();
 						this.move_right();
 					}
-				
+
 				}
 
 				else if(Math.abs(this.rotation[1] + Math.PI/2.0) <= 0.01 )
@@ -624,12 +632,12 @@ class mario extends physics_component
 						ground_boxes[i].move_left();
 						this.move_left();
 					}
-				
+
 				}
 			}
-		}    	
+		}
     }
-	
+
 
 
 
@@ -683,12 +691,12 @@ class mario extends physics_component
        	  if(this.position[0] >= sky_boxes[i].position[0] - 1 &&  this.position[0] <= sky_boxes[i].position[0] + 1 && this.position[1] > sky_boxes[i].position[1]+2.5)
        	  {
        	  	this.ground =  Math.max(sky_boxes[i].position[1]+3, this.ground);
-      
+
        	  }
-       	 	
+
        }
 
-	
+
 
        if (this.position[1] > this.ground ){
         this.accleration = this.accleration.plus(Vec.of(0,this.g,0));
@@ -736,7 +744,7 @@ class mario extends physics_component
        for(i = 0; i< sky_boxes.length; i++)
        {
        	 if(this.position[0] >= sky_boxes[i].position[0] - 1 &&  this.position[0] <= sky_boxes[i].position[0] + 1 && this.position[1] < sky_boxes[i].position[1])
-       	 if(this.position[1] > sky_boxes[i].position[1]-2)  
+       	 if(this.position[1] > sky_boxes[i].position[1]-2)
        	 {
        	 	this.position[1] = sky_boxes[i].position[1]-2;
 
@@ -747,21 +755,35 @@ class mario extends physics_component
 
     draw(context, program_state, material)
     {
-	
+
 			  var i = 0;
 		      this.update_transform();
-		      this.object_type.draw(context, program_state, this.transforms, material);
-			  
+		      //original
+		      this.object_type.draw(context, program_state, this.transforms.times(Mat4.translation([0,0,-2])), material.override(yellow));
+			  //colored
+		      this.obj_face.draw(context, program_state,
+		      			this.transforms.times(Mat4.translation([0,0.7,0.3])).times(Mat4.scale([1/1.7,1/1.7,1/1.7])), material.override(faceColor));
+		      this.obj_redhead.draw(context, program_state,
+		      			this.transforms.times(Mat4.translation([0,0.4,-0.1])).times(Mat4.scale([1/1.1,1/1.1,1/1.1])),
+		      			material.override(red));
+		      this.obj_chest.draw(context, program_state,
+		      			this.transforms.times(Mat4.translation([0,-0.4,0]).times(Mat4.scale([1/1.8,1/1.8,1/1.8]))), material.override(blue));
+		      this.obj_body.draw(context, program_state,
+		      			this.transforms.times(Mat4.translation([0,-0.85,-0.09]).times(Mat4.scale([1/1.6,1/1.6,1/1.6]))), material.override(blue));
+		      this.obj_hands.draw(context, program_state,
+		      			this.transforms.times(Mat4.translation([0,-0.65,-0.32]).times(Mat4.scale([1/1.1,1/1.1,1/1.1]))), material.override(white));
+		      this.obj_feet.draw(context, program_state, this.transforms.times(Mat4.translation([0,-1.9,0]).times(Mat4.scale([1/1.5,1/1.5,1/1.5]))), material.override(brown));
+
 		      for (i = 0 ; i < this.bullets.length; i++)
 		      {
-		      	
+
 		      	this.bullets[i].draw(context, program_state, this.bullets_transform[i].times(Mat4.translation([2,0,0])), bullet_material);
 		      	this.bullets_transform[i] = this.bullets_transform[i].times(Mat4.translation([0.2*this.bullet_speed[i],0,0]));
 
 		      }
 		      this.compute_next();
 
-	
+
 
     }
 }
@@ -810,7 +832,7 @@ class Movement_Controls extends Scene
 					"plank":new physics_component(100, "cube"),
 
                       };
-                      
+
       const phong_shader      = new defs.Phong_Shader  (2);
                                                               // Adding textures to the previous shader:
       const texture_shader    = new defs.Textured_Phong(2);
@@ -844,10 +866,11 @@ class Movement_Controls extends Scene
 
                       black_hole: new Material( black_hole_shader ),
                              sun: new Material( sun_shader, { ambient: 1, color: Color.of( 1,0.5,0,1 ) } ),
-
+						cap: new Material( phong_shader,
+							  { ambient: 1, diffusivity: 1, specularity: 0, color: Color.of(1.0, 0.0, 0.0,1) } ),
                        };
-       bullet_material = this.materials.sun;
-      
+       bullet_material = this.materials.cap;
+
       // *** Shaders ***
 		sky_boxes.push( this.shapes.fixedBox1);
 		sky_boxes.push( this.shapes.fixedBox2);
@@ -1250,7 +1273,7 @@ function check_for_coin_collection(shapes)
 		this.shapes.interactive_box1.update_position_override(temp1);
     	ground_boxes.push(this.shapes.interactive_box1);
 	}
-	
+
     this.shapes.interactive_box1.draw(context, program_state, this.materials.wooden_box);
 
 
@@ -1316,8 +1339,16 @@ function check_for_coin_collection(shapes)
 	{
 	  	this.shapes.mario.update_position_override(revivePoints[currentRPIndex]);
 	}
-      this.shapes.mario.draw(context, program_state, this.materials.plastic.override( yellow ));
-  
+      // this.shapes.mario.draw(context, program_state, this.materials.plastic.override( yellow ));
+      this.shapes.mario.draw(context, program_state, this.materials.plastic);
+		// this.object_type = new Shape_From_File( "assets/mario/mario.obj" );
+		// this.obj_redhead = new Shape_From_File( "assets/mario/red.obj" );
+		// this.obj_face = new Shape_From_File( "assets/mario/face.obj" );
+		// this.obj_chest = new Shape_From_File( "assets/mario/chest.obj" );
+		// this.obj_body = new Shape_From_File( "assets/mario/bluebody.obj" );
+		// this.obj_hands = new Shape_From_File( "assets/mario/whitehands.obj" );
+		// this.obj_feet = new Shape_From_File( "assets/mario/brownfeet.obj" );
+
 
       this.camera_teleporter.cameras.push( Mat4.inverse(this.shapes.mario.transform_position.times(Mat4.rotation(0 ,[1,0,0])).times(Mat4.translation([ 0,0, 20])) ));
       this.camera_teleporter.cameras.push( Mat4.inverse(this.shapes.mario.transform_position.times(Mat4.rotation(-Math.PI/2 ,[1,0,0])).times(Mat4.translation([ 0,0, 20])) ));
@@ -1495,7 +1526,7 @@ class Sun_Shader extends Shader
     {
                       // TODO (#EC 2): Pass the same information to the shader as for EC part 1.  Additionally
                       // pass material.color to the shader.
-                   
+
         const [ P, C, M ] = [ program_state.projection_transform, program_state.camera_inverse, model_transform ],
                       PCM = P.times( C ).times( M );
         context.uniformMatrix4fv( gpu_addresses.projection_camera_model_transform, false, Mat.flatten_2D_to_1D( PCM.transposed() ) );
@@ -1513,8 +1544,8 @@ class Sun_Shader extends Shader
         uniform vec4 sun_color;
         varying float disp;
         varying float noise;
-      
-                            
+
+
       `;
     }
   vertex_glsl_code()           // ********* VERTEX SHADER *********
@@ -1529,8 +1560,8 @@ class Sun_Shader extends Shader
         attribute vec3 normal;
         attribute vec2 uv;
         attribute vec2 uv2;
-        
-   
+
+
         const float fireSpeed = 0.5;
         const float pulseHeight = 0.5;
         const float displacementHeight= 0.5;
@@ -1550,7 +1581,7 @@ class Sun_Shader extends Shader
         vec3 fade(vec3 t) {
           return t*t*t*(t*(t*6.0-15.0)+10.0);
         }
-        // Klassisk Perlin noise 
+        // Klassisk Perlin noise
         float cnoise(vec3 P) {
           vec3 Pi0 = floor(P); // indexing
           vec3 Pi1 = Pi0 + vec3(1.0); // Integer part + 1
@@ -1611,7 +1642,7 @@ class Sun_Shader extends Shader
           float n_xyz = mix(n_yz.x, n_yz.y, fade_xyz.x);
           return 2.2 * n_xyz;
         }
-        // Ashima code 
+        // Ashima code
         float turbulence( vec3 p ) {
             float t = -0.5;
             for (float f = 1.0 ; f <= 10.0 ; f++ ){
@@ -1635,7 +1666,7 @@ class Sun_Shader extends Shader
     }
   fragment_glsl_code()           // ********* FRAGMENT SHADER *********
     { return this.shared_glsl_code() + `
-        void main() 
+        void main()
         {
             vec3 color = vec3((1.-disp), (0.1-disp*0.2)+0.1, (0.1-disp*0.1)+0.1*abs(sin(disp)));
             gl_FragColor = vec4( color.rgb, 1.0 );
