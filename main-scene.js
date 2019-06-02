@@ -25,13 +25,14 @@ var bullet_material;
  var coinScore = 0;
 //reviving structure
 var revivePoints = [];
-var currentRPIndex = 0;
+//TODO: edit back to 0
+var currentRPIndex = 3;
 //store riving points
 //TODO: EDIT POINTS
 revivePoints.push(Vec.of(-17, 20, 0));
 revivePoints.push(Vec.of(0, 20, 0));
 revivePoints.push(Vec.of(10, 20, 0));
-revivePoints.push(Vec.of(20, 20, 0));
+revivePoints.push(Vec.of(95, 20, 0));
 
 class physics_component
 {
@@ -731,8 +732,8 @@ class mario extends physics_component
         this.jump_count = 0;
         this.position[1] = this.ground;
        }
-       //else if ( Math.abs(this.position[1] - this.ground) <= 0.4  && Math.abs(this.position[1] - this.ground) > 0  && this.jumpStart == false)
-       else if ( Math.abs(this.position[1] - this.ground) > 0  && this.jumpStart == false)
+       else if ( Math.abs(this.position[1] - this.ground) <= 0.4  && Math.abs(this.position[1] - this.ground) > 0  && this.jumpStart == false)
+//       else if ( Math.abs(this.position[1] - this.ground) > 0  && this.jumpStart == false)
        {
         	 this.velocity = Vec.of(0,0,0);
         	 this.jump_count = 0;
@@ -809,7 +810,7 @@ class Movement_Controls extends Scene
       super();
 
 
-
+	  //shapes list
       this.shapes = { 'box' : new Cube(),
 	  				'scene_box': new physics_component(1000 ,"cube"),
 					'scene_box_45': new physics_component(1000, "cube",Vec.of(0,0,0), Vec.of(0,0,Math.PI/4)),
@@ -847,6 +848,7 @@ class Movement_Controls extends Scene
       const sun_shader        = new Sun_Shader();
 
 	  const green = Color.of(0.13,0.5,0.41,1);
+	  //material list
       this.materials = { plastic: new Material( phong_shader,
                                     { ambient: 1, diffusivity: 1, specularity: 0, color: green } ),
                    grass_ground: new Material( texture_shader_2,
@@ -869,6 +871,8 @@ class Movement_Controls extends Scene
                              sun: new Material( sun_shader, { ambient: 1, color: Color.of( 1,0.5,0,1 ) } ),
 						cap: new Material( phong_shader,
 							  { ambient: 1, diffusivity: 1, specularity: 0, color: Color.of(1.0, 0.0, 0.0,1) } ),
+						sokoban_wall: new Material( texture_shader_2,
+										{ambient: 1, diffusivity: 1, specularity: 1, texture: new Texture( "assets/sokoban/Wall_Gray.png" ) }),
                        };
        bullet_material = this.materials.cap;
 
@@ -996,17 +1000,12 @@ class Movement_Controls extends Scene
 
       model_transform = Mat4.identity();
 
-      // this.shapes.box.draw( context, program_state, model_transform, this.materials.plastic.override( yellow ) );
-
-
-
-
 
       //program_state.set_camera( Mat4.inverse(this.shapes.mario.transform_position.times(Mat4.rotation(0 ,[1,0,0])).times(Mat4.translation([ 0,0, 20]))  ) );
 	  //-----draw scene----//
 // 	 const unscaled = model_transform.copy();
 // 	 var model_transform_square = model_transform.times(Mat4.translation(Vec.of(-15, -6, 0)));
-function draw_flat_ground (context, program_state, length, currentPos, shapes, materials)
+function draw_flat_ground (context, program_state, length, currentPos, shape, material)
 {
 
 
@@ -1019,8 +1018,8 @@ function draw_flat_ground (context, program_state, length, currentPos, shapes, m
 	var right_x;
 	var angle;
     for (var i = 0; i <= length; ++i) {
-	  shapes.scene_box.update_position_override(currentPos);
-	  shapes.scene_box.draw(context, program_state, materials.grass_ground);
+	  shape.update_position_override(currentPos);
+	  shape.draw(context, program_state, material);
 	  currentPos = currentPos.plus(Vec.of(2,0,0));
     }
 	  currentPos = currentPos.minus(Vec.of(2,0,0));
@@ -1030,8 +1029,8 @@ function draw_flat_ground (context, program_state, length, currentPos, shapes, m
 
     	var temp = currentPos;
     	temp = currentPos.plus(Vec.of(2,0,0));
-    	shapes.scene_box.update_position_override(temp);
-	  	shapes.scene_box.draw(context, program_state, materials.grass_ground);
+    	shape.update_position_override(temp);
+	  	shape.draw(context, program_state, material);
 	  	right_x = temp[0]+1;
 
     }
@@ -1094,14 +1093,14 @@ function draw_downwards_slope(context, program_state, length, currentPos, shapes
 	return currentPos;
 }
 //draw a vertical wall of "height" start from the next cube position
-function draw_vertical_wall(context, program_state, height, currentPos, shapes, materials)
+function draw_vertical_wall(context, program_state, height, currentPos, shape, material)
 {
 	if(height < 0)
 		currentPos = currentPos.plus(Vec.of(cubeSize,height*cubeSize,0));
 	else
 		currentPos = currentPos.plus(Vec.of(cubeSize,0,0));
     for (var i = 0; i < Math.abs(height); ++i) {
-		currentPos = draw_flat_ground(context, program_state, 0, currentPos, shapes, materials);
+		currentPos = draw_flat_ground(context, program_state, 0, currentPos, shape, material);
 		currentPos = currentPos.plus(Vec.of(0,cubeSize,0));
 	}
 	currentPos = currentPos.minus(Vec.of(0,cubeSize,0));
@@ -1111,11 +1110,19 @@ function draw_vertical_wall(context, program_state, height, currentPos, shapes, 
 //function draw_coin(context, program_state, position, rotationangle, thecoin)
 //TODO: interactive box placing function
 //function draw_interactive_box(context, program_state, position, thebox)
-function draw_plank (context, program_state, length, currentPos, shapes, materials)
+function draw_plank (context, program_state, length, currentPos, shapes, materials, upAndDown)
 {
      counter++;
-	var scaleSizeX = 4, scaleSizeY = 1/3;
-	currentPos = currentPos.plus(Vec.of(scaleSizeX+1,0,0))
+	 var scaleSizeX, scaleSizeY;
+	if(upAndDown)
+	{
+		scaleSizeX = 4, scaleSizeY = 1/3;
+		currentPos = currentPos.plus(Vec.of(scaleSizeX+2,0,0));
+	}
+	else {
+		scaleSizeX = 2, scaleSizeY = 1/3;
+		currentPos = currentPos.plus(Vec.of(scaleSizeX+4,0,0));
+	}
 	var left_height = currentPos[1]+3-(1-scaleSizeY);
 	var right_height = currentPos[1]+3-(1-scaleSizeY);
 	var left_x = currentPos[0]-scaleSizeX;
@@ -1188,16 +1195,16 @@ function check_for_coin_collection(shapes)
 	var length = 3;
 	var currentPosition = Vec.of(-17, -6, 0); //starting position of ground
 
-	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes, this.materials);
+	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes.scene_box, this.materials.grass_ground);
 	currentPosition = draw_upwards_slope(context, program_state, length, currentPosition, this.shapes, this.materials);
-	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes, this.materials);
+	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes.scene_box, this.materials.grass_ground);
 	//first interactive box
 
 	var temp1 = currentPosition.plus(Vec.of(0,2.1,0));
 
 
 	currentPosition = draw_downwards_slope(context, program_state, length, currentPosition, this.shapes, this.materials);
-	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes, this.materials);
+	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes.scene_box, this.materials.grass_ground);
 	//first coin
 	if (frame == 0)
 	{
@@ -1208,8 +1215,8 @@ function check_for_coin_collection(shapes)
     this.shapes.coin1.draw(context, program_state, this.materials.gold);
 	//Need to push the 1st box to keep going
 	var tempHeight = 3; //(currently can directly jump to continue) make it 4 when the wooden box works
-	currentPosition = draw_vertical_wall(context, program_state, tempHeight, currentPosition, this.shapes, this.materials);
-	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes, this.materials);
+	currentPosition = draw_vertical_wall(context, program_state, tempHeight, currentPosition, this.shapes.scene_box, this.materials.grass_ground);
+	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes.scene_box, this.materials.grass_ground);
 	//three wooden box in the air
 	this.shapes.fixedBox1.update_position_override(currentPosition.plus(Vec.of(-2*cubeSize,3*cubeSize,0)));
     this.shapes.fixedBox1.draw(context, program_state, this.materials.wooden_box);
@@ -1235,7 +1242,7 @@ function check_for_coin_collection(shapes)
   	this.shapes.coin3.update_rotation_override(Vec.of(0,angle,0));
     this.shapes.coin3.draw(context, program_state, this.materials.gold);
 	//ground
-	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes, this.materials);
+	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes.scene_box, this.materials.grass_ground);
 	//Need to push the 2nd interactive box to continue
 
 	var temp2 = currentPosition.plus(Vec.of(0,2.1,0));
@@ -1250,23 +1257,66 @@ function check_for_coin_collection(shapes)
     this.shapes.coin4.draw(context, program_state, this.materials.gold);
 	//----\\\
 	currentPosition = draw_downwards_slope(context, program_state, length, currentPosition, this.shapes, this.materials);
-	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes, this.materials);
+	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes.scene_box, this.materials.grass_ground);
 
 	//pit
 	let depth = 2, width = 3;
-	currentPosition = draw_vertical_wall(context, program_state, -(depth-1), currentPosition.minus(Vec.of(cubeSize,0,0)), this.shapes, this.materials);
-	currentPosition = draw_flat_ground(context, program_state, width, currentPosition.plus(Vec.of(0,-(depth-1)*cubeSize,0)), this.shapes, this.materials);
-	currentPosition = draw_vertical_wall(context, program_state, depth+1, currentPosition, this.shapes, this.materials);
-	currentPosition = draw_flat_ground(context, program_state, length, currentPosition.plus(Vec.of(0,cubeSize,0)), this.shapes, this.materials);
-	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes, this.materials);
-	//floating plank
-	var plankPosition = -4*Math.sin(t/2) - 1;
-	currentPosition = draw_plank(context, program_state, 2, currentPosition.minus(Vec.of(0,plankPosition*cubeSize,0)), this.shapes, this.materials);
-	currentPosition = currentPosition.plus(Vec.of(0,plankPosition*cubeSize,0))
+	currentPosition = draw_vertical_wall(context, program_state, -(depth-1), currentPosition.minus(Vec.of(cubeSize,0,0)), this.shapes.scene_box, this.materials.grass_ground);
+	currentPosition = draw_flat_ground(context, program_state, width, currentPosition.plus(Vec.of(0,-(depth-1)*cubeSize,0)), this.shapes.scene_box, this.materials.grass_ground);
+	currentPosition = draw_vertical_wall(context, program_state, depth+1, currentPosition, this.shapes.scene_box, this.materials.grass_ground);
+	currentPosition = draw_flat_ground(context, program_state, length, currentPosition.plus(Vec.of(0,cubeSize,0)), this.shapes.scene_box, this.materials.grass_ground);
+	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes.scene_box, this.materials.grass_ground);
+	//up and down plank
+	//TODO: edit back to t/2
+	var plank1Position = -4*Math.sin(t) - 1;
+	currentPosition = draw_plank(context, program_state, 2, currentPosition.minus(Vec.of(0,plank1Position*cubeSize,0)), this.shapes, this.materials, true);
+	currentPosition = currentPosition.plus(Vec.of(0,plank1Position*cubeSize,0))
 	// this.shapes.plank.update_position_override(currentPosition.plus(Vec.of(cubeSize,0,0)));
   	// this.shapes.plank.draw(context, program_state, this.materials.wood);
-	currentPosition = draw_flat_ground(context, program_state, length, currentPosition.plus(Vec.of(length*cubeSize, 5*cubeSize,0)), this.shapes, this.materials);
+	currentPosition = draw_flat_ground(context, program_state, length, currentPosition.plus(Vec.of(length*cubeSize, 5*cubeSize,0)), this.shapes.scene_box, this.materials.grass_ground);
+	//left and right plank
+	//TODO: edit back to t/2
+	var plank2Position = -2*Math.sin(t) - 1;
+	currentPosition = draw_plank(context, program_state, 0, currentPosition.minus(Vec.of(plank2Position*cubeSize,0,0)), this.shapes, this.materials, false);
+	currentPosition = currentPosition.plus(Vec.of(plank2Position*cubeSize,0,0))
 
+	//------------LEVEL2: Sokoban--------------
+	let length1 = 11, length2 = 4, length3 = length1 - length2;
+	var tempPos;
+	//main way
+
+	tempPos = currentPosition.plus(Vec.of(5*cubeSize,0,0));
+	currentPosition = draw_flat_ground(context, program_state, length1, currentPosition.plus(Vec.of(5*cubeSize,0,0)), this.shapes.scene_box, this.materials.grass_ground);
+	//interactive box 3
+	//TODO: push to array??
+	tempPos = draw_flat_ground(context, program_state, 0, tempPos.plus(Vec.of((length3+1)*cubeSize,cubeSize,0)), this.shapes.interactive_box3, this.materials.wooden_box);
+
+	//down1
+	tempPos = currentPosition.plus(Vec.of(-length3*cubeSize,0,cubeSize));
+	currentPosition = draw_flat_ground(context, program_state, length2, currentPosition.plus(Vec.of(-length3*cubeSize,0,cubeSize)), this.shapes.scene_box, this.materials.grass_ground);
+	tempPos = draw_flat_ground(context, program_state, 0, tempPos.plus(Vec.of(0,cubeSize,0)), this.shapes.scene_box, this.materials.sokoban_wall);
+	//interactive box 4
+	//TODO: push to array??
+	tempPos = draw_flat_ground(context, program_state, 0, tempPos.plus(Vec.of(3*cubeSize,0,0)), this.shapes.interactive_box4, this.materials.wooden_box);
+
+	//down2
+	tempPos = currentPosition.plus(Vec.of(-length2*cubeSize,0,cubeSize));
+	currentPosition = draw_flat_ground(context, program_state, length2, currentPosition.plus(Vec.of(-length2*cubeSize,0,cubeSize)), this.shapes.scene_box, this.materials.grass_ground);
+	tempPos = draw_flat_ground(context, program_state, length2, tempPos.plus(Vec.of(0,cubeSize,0)), this.shapes.scene_box, this.materials.sokoban_wall);
+
+	//up1
+	tempPos = currentPosition.plus(Vec.of(-length2*cubeSize,0,-3*cubeSize));
+	currentPosition = draw_flat_ground(context, program_state, length2, currentPosition.plus(Vec.of(-length2*cubeSize,0,-3*cubeSize)), this.shapes.scene_box, this.materials.grass_ground);
+	tempPos = draw_flat_ground(context, program_state, 0, tempPos.plus(Vec.of(0,cubeSize,0)), this.shapes.scene_box, this.materials.sokoban_wall);
+	//interactive box 5
+	//TODO: push to array??
+	tempPos = draw_flat_ground(context, program_state, 0, tempPos.plus(Vec.of(3*cubeSize,0,0)), this.shapes.interactive_box5, this.materials.wooden_box);
+
+	//up2
+	tempPos = currentPosition.plus(Vec.of(-length2*cubeSize,0,-cubeSize));
+	currentPosition = draw_flat_ground(context, program_state, length2, currentPosition.plus(Vec.of(-length2*cubeSize,0,-cubeSize)), this.shapes.scene_box, this.materials.grass_ground);
+	tempPos = draw_flat_ground(context, program_state, 2, tempPos.plus(Vec.of(0,cubeSize,0)), this.shapes.scene_box, this.materials.sokoban_wall);
+	tempPos = draw_flat_ground(context, program_state, 0, tempPos.plus(Vec.of(2*cubeSize,0,0)), this.shapes.scene_box, this.materials.sokoban_wall);
 
 
 	if(frame == 0 )
@@ -1327,29 +1377,22 @@ function check_for_coin_collection(shapes)
       var factor = 1;
 	  check_for_coin_collection(this.shapes);
 
-	//update Revive Point
+	//update current Revive Point
 	for (var i = currentRPIndex; i < revivePoints.length; i++)
 	{
 		let currentPoint = revivePoints[i];
 		if(pos[0] > currentPoint[0])
 			currentRPIndex = i;
-
 	}
 	//death detection
 	if(pos[1] < -30)
 	{
+		this.shapes.mario.jumpStart = false;
 	  	this.shapes.mario.update_position_override(revivePoints[currentRPIndex]);
 	}
       // this.shapes.mario.draw(context, program_state, this.materials.plastic.override( yellow ));
+      //draw mario
       this.shapes.mario.draw(context, program_state, this.materials.plastic);
-		// this.object_type = new Shape_From_File( "assets/mario/mario.obj" );
-		// this.obj_redhead = new Shape_From_File( "assets/mario/red.obj" );
-		// this.obj_face = new Shape_From_File( "assets/mario/face.obj" );
-		// this.obj_chest = new Shape_From_File( "assets/mario/chest.obj" );
-		// this.obj_body = new Shape_From_File( "assets/mario/bluebody.obj" );
-		// this.obj_hands = new Shape_From_File( "assets/mario/whitehands.obj" );
-		// this.obj_feet = new Shape_From_File( "assets/mario/brownfeet.obj" );
-
 
       this.camera_teleporter.cameras.push( Mat4.inverse(this.shapes.mario.transform_position.times(Mat4.rotation(0 ,[1,0,0])).times(Mat4.translation([ 0,0, 20])) ));
       this.camera_teleporter.cameras.push( Mat4.inverse(this.shapes.mario.transform_position.times(Mat4.rotation(-Math.PI/2 ,[1,0,0])).times(Mat4.translation([ 0,0, 20])) ));
