@@ -11,7 +11,7 @@ const { Cube, Subdivision_Sphere, Transforms_Sandbox_Base } = defs;
     // Now we have loaded everything in the files tiny-graphics.js, tiny-graphics-widgets.js, and assignment-4-resources.js.
     // This yielded "tiny", an object wrapping the stuff in the first two files, and "defs" for wrapping all the rest.
 // (Can define Main_Scene's class here)
-const blue = Color.of( 0,0,.5,1 ), yellow = Color.of( .5,.5,0,1 ), white = Color.of(1.0,1.0,1.0,1.0), red = Color.of(1.0, 0.0, 0.0,1), faceColor = Color.of(0.96, 0.92, 0.84,1), brown = Color.of(0.62, 0.31, 0.0, 1);
+const blue = Color.of( 0,0,.5,1 ), yellow = Color.of( .5,.5,0,1 ), white = Color.of(1.0,1.0,1.0,1.0), red = Color.of(1.0, 0.0, 0.0,1), faceColor = Color.of(0.96, 0.87, 0.56,1), brown = Color.of(0.62, 0.31, 0.0, 1);
 
 var path = [];
 var counter = 0;
@@ -759,8 +759,9 @@ class mario extends physics_component
 			  var i = 0;
 		      this.update_transform();
 		      //original
-		      this.object_type.draw(context, program_state, this.transforms.times(Mat4.translation([0,0,-2])), material.override(yellow));
-			  //colored
+		      //this.object_type.draw(context, program_state, this.transforms.times(Mat4.translation([0,0,-2])), material.override(yellow));
+
+			  //colored mario; draw obj parts separately
 		      this.obj_face.draw(context, program_state,
 		      			this.transforms.times(Mat4.translation([0,0.7,0.3])).times(Mat4.scale([1/1.7,1/1.7,1/1.7])), material.override(faceColor));
 		      this.obj_redhead.draw(context, program_state,
