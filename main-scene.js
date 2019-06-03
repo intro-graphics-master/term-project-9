@@ -985,13 +985,13 @@ class Movement_Controls extends Scene
 			           ambient: 1, diffusivity: 1, specularity: 1, texture: new Texture( "assets/goldcoin.png" ) }),
 
                       black_hole: new Material( black_hole_shader ),
-                             sun: new Material( sun_shader, { ambient: 1, color: Color.of( 1,0.5,0,1 ) } ),
+                             sun: new Material( sun_shader, { ambient: 1, color: yellow } ),
 						cap: new Material( phong_shader,
 							  { ambient: 1, diffusivity: 1, specularity: 0, color: Color.of(1.0, 0.0, 0.0,1) } ),
 						sokoban_wall: new Material( texture_shader_2,
 										{ambient: 1, diffusivity: 1, specularity: 1, texture: new Texture( "assets/sokoban/Wall_Gray.png" ) }),
                        };
-       bullet_material = this.materials.cap;
+       bullet_material = this.materials.sun;
 
       // *** Shaders ***
 		sky_boxes.push( this.shapes.fixedBox1);
