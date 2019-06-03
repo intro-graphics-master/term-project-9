@@ -26,26 +26,32 @@ var mario_pos;
 var deathTimeAI = -1;
 var deathTImeMario = -1;
 //TODO: implement score calculation
- var coinScore = 0;
+var coinScore = 0;
 //reviving structure
 var revivePoints = [];
-//TODO: edit back to 0
 var currentRPIndex = 0;
-//store riving points
-//TODO: EDIT POINTS
+//store reviving points
 //0:
-revivePoints.push(Vec.of(-17, 20, 0));
+revivePoints.push(Vec.of(-17, 20, 0));//starting point
 //1:
-revivePoints.push(Vec.of(-1, 20, 0));
+revivePoints.push(Vec.of(-1, 20, 0));//right before the first movable box
 //2:
-revivePoints.push(Vec.of(95, 20, 0)); //just after horizontally moving plank
+revivePoints.push(Vec.of(24, 20, 0));//right before the second movable box
 //3:
-const level2StartingPointIndex = 3;
-revivePoints.push(Vec.of(103, 20, 0));//starting point of level2
+revivePoints.push(Vec.of(37, 20, 0));//right before the pit
 //4:
-revivePoints.push(Vec.of(113, 20, 0));//after "box tower"
+revivePoints.push(Vec.of(57, 20, 0)); //right before the vertically moving plank
 //5:
-revivePoints.push(Vec.of(132, 20, 0));//flag
+revivePoints.push(Vec.of(73, 20, 0)); //immediately after vertically moving plank
+//6:
+revivePoints.push(Vec.of(95, 20, 0)); //immediately after horizontally moving plank
+//7:
+const level2StartingPointIndex = 7;
+revivePoints.push(Vec.of(102, 20, 0));//starting point of level2
+//8:
+revivePoints.push(Vec.of(113, 20, 0));//after "box tower"
+//9:
+revivePoints.push(Vec.of(132, 20, 0));//flag point
 const appearingPosAI2 = Vec.of(111, 20, 0);
 
 class physics_component
@@ -968,7 +974,7 @@ class Movement_Controls extends Scene
 	  //material list
       this.materials = { plastic: new Material( phong_shader,
                                     { ambient: 1, diffusivity: 1, specularity: 0, color: green } ),
-                   grass_ground: new Material( texture_shader_2,
+                   brick_ground: new Material( texture_shader_2,
                                     { texture: new Texture( "assets/bricks.png" ),
                                       ambient: 1, diffusivity: 1, specularity: 0 } ),
                    wooden_box: new Material( texture_shader_2,
@@ -979,15 +985,10 @@ class Movement_Controls extends Scene
                                         ambient: 1, diffusivity: 1, specularity: 0 } ),
                            metal: new Material( phong_shader,
                                     { ambient: 0, diffusivity: 1, specularity: 1, color: Color.of( 1,.5,1,1 ) } ),
-                     // gold: new Material( new defs.Fake_Bump_Map( 1 ), { color: Color.of( .5,.5,.5,1 ),
-			           // ambient: .3, diffusivity: .5, specularity: .5, texture: new Texture( "assets/gold.png" ) }),
                      gold: new Material( texture_shader_2, {
 			           ambient: 1, diffusivity: 1, specularity: 1, texture: new Texture( "assets/goldcoin.png" ) }),
-
                       black_hole: new Material( black_hole_shader ),
                              sun: new Material( sun_shader, { ambient: 1, color: yellow } ),
-						cap: new Material( phong_shader,
-							  { ambient: 1, diffusivity: 1, specularity: 0, color: Color.of(1.0, 0.0, 0.0,1) } ),
 						sokoban_wall: new Material( texture_shader_2,
 										{ambient: 1, diffusivity: 1, specularity: 1, texture: new Texture( "assets/sokoban/Wall_Gray.png" ) }),
                        };
@@ -1103,18 +1104,10 @@ class Movement_Controls extends Scene
       /**********************************
       Start coding down here!!!!
       **********************************/
-
-
-                                    // Variable model_transform will be a local matrix value that helps us position shapes.
-                                    // It starts over as the identity every single frame - coordinate axes at the origin.
       let model_transform = Mat4.identity();
 
-
-                                                // *** Lights: *** Values of vector or point lights.  They'll be consulted by
-                                                // the shader when coloring shapes.  See Light's class definition for inputs.
-
       program_state.lights = [ new Light( Vec.of( 0,0,0,1 ), Color.of( 1,1,1,1 ), 100000 ) ];
-      const modifier = this.lights_on ? { ambient: 0.3 } : { ambient: 0.0 };
+      // const modifier = this.lights_on ? { ambient: 0.3 } : { ambient: 0.0 };
 
       // ***** BEGIN TEST SCENE *****
       const angle = Math.sin( t );
@@ -1123,12 +1116,7 @@ class Movement_Controls extends Scene
 
       program_state.lights = [ new Light( Vec.of(0,0,0,1), Color.of( 1,1,1,1 ), 1000000 ) ];
 
-      model_transform = Mat4.identity();
-
-
       //program_state.set_camera( Mat4.inverse(this.shapes.mario.transform_position.times(Mat4.rotation(0 ,[1,0,0])).times(Mat4.translation([ 0,0, 20]))  ) );
-// 	 const unscaled = model_transform.copy();
-// 	 var model_transform_square = model_transform.times(Mat4.translation(Vec.of(-15, -6, 0)));
 function draw_flat_ground (context, program_state, length, currentPos, shape, material)
 {
 
@@ -1176,7 +1164,7 @@ function draw_upwards_slope (context, program_state, length, currentPos, shapes,
     for (var i = 0; i < length; ++i) {
 	  shapes.scene_box_45.update_position_override(currentPos);
 
-	  shapes.scene_box_45.draw(context, program_state, materials.grass_ground);
+	  shapes.scene_box_45.draw(context, program_state, materials.brick_ground);
 	  currentPos = currentPos.plus(Vec.of(2/Math.sqrt(2),2/Math.sqrt(2),0));
     }
 
@@ -1201,7 +1189,7 @@ function draw_downwards_slope(context, program_state, length, currentPos, shapes
 	currentPos = currentPos.plus(Vec.of(1,1-2/Math.sqrt(2),0));
     for (var i = 0; i < length; ++i) {
 	  shapes.scene_box_135.update_position_override(currentPos);
-	  shapes.scene_box_135.draw(context, program_state, materials.grass_ground);
+	  shapes.scene_box_135.draw(context, program_state, materials.brick_ground);
 	  currentPos = currentPos.plus(Vec.of(2/Math.sqrt(2),-2/Math.sqrt(2),0));
     }
 
@@ -1313,34 +1301,39 @@ function check_for_coin_collection(shapes)
 		}
 	}
 }
+function characterRevive(character)
+{
+	character.jumpStart = false;
+  	character.update_position_override(revivePoints[currentRPIndex]);
+}
 
 	  //-----START DRAWING----//
 	const cubeSize = 2;
 	var length = 3;
 	var currentPosition = Vec.of(-17, -6, 0); //starting position of ground
 
-	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes.scene_box, this.materials.grass_ground);
+	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes.scene_box, this.materials.brick_ground);
 	currentPosition = draw_upwards_slope(context, program_state, length, currentPosition, this.shapes, this.materials);
-	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes.scene_box, this.materials.grass_ground);
+	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes.scene_box, this.materials.brick_ground);
 	//first interactive box
 
 	var temp1 = currentPosition.plus(Vec.of(0,2.1,0));
 
 
 	currentPosition = draw_downwards_slope(context, program_state, length, currentPosition, this.shapes, this.materials);
-	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes.scene_box, this.materials.grass_ground);
+	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes.scene_box, this.materials.brick_ground);
 	//first coin
 	if (frame == 0)
 	{
-		this.shapes.coin1.update_position_override(currentPosition.plus(Vec.of(-cubeSize,2.5*cubeSize,0)));
+		this.shapes.coin1.update_position_override(currentPosition.plus(Vec.of(-2*cubeSize,4.5*cubeSize,0)));
     	coins.push({'position': this.shapes.coin1.position});
 	}
   	this.shapes.coin1.update_rotation_override(Vec.of(0,angle,0));
     this.shapes.coin1.draw(context, program_state, this.materials.gold);
-	//Need to push the 1st box to keep going
+
 	var tempHeight = 3; //(currently can directly jump to continue) make it 4 when the wooden box works
-	currentPosition = draw_vertical_wall(context, program_state, tempHeight, currentPosition, this.shapes.scene_box, this.materials.grass_ground);
-	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes.scene_box, this.materials.grass_ground);
+	currentPosition = draw_vertical_wall(context, program_state, tempHeight, currentPosition, this.shapes.scene_box, this.materials.brick_ground);
+	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes.scene_box, this.materials.brick_ground);
 	//three wooden box in the air
 	this.shapes.fixedBox1.update_position_override(currentPosition.plus(Vec.of(-2*cubeSize,3*cubeSize,0)));
     this.shapes.fixedBox1.draw(context, program_state, this.materials.wooden_box);
@@ -1366,8 +1359,7 @@ function check_for_coin_collection(shapes)
   	this.shapes.coin3.update_rotation_override(Vec.of(0,angle,0));
     this.shapes.coin3.draw(context, program_state, this.materials.gold);
 	//ground
-	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes.scene_box, this.materials.grass_ground);
-	//Need to push the 2nd interactive box to continue
+	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes.scene_box, this.materials.brick_ground);
 
 	var temp2 = currentPosition.plus(Vec.of(0,2.1,0));
 
@@ -1381,70 +1373,50 @@ function check_for_coin_collection(shapes)
     this.shapes.coin4.draw(context, program_state, this.materials.gold);
 	//----\\\
 	currentPosition = draw_downwards_slope(context, program_state, length, currentPosition, this.shapes, this.materials);
-	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes.scene_box, this.materials.grass_ground);
+	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes.scene_box, this.materials.brick_ground);
 
 	//pit
 	let depth = 2, width = 3;
-	currentPosition = draw_vertical_wall(context, program_state, -(depth-1), currentPosition.minus(Vec.of(cubeSize,0,0)), this.shapes.scene_box, this.materials.grass_ground);
-	currentPosition = draw_flat_ground(context, program_state, width, currentPosition.plus(Vec.of(0,-(depth-1)*cubeSize,0)), this.shapes.scene_box, this.materials.grass_ground);
-	currentPosition = draw_vertical_wall(context, program_state, depth+1, currentPosition, this.shapes.scene_box, this.materials.grass_ground);
-	currentPosition = draw_flat_ground(context, program_state, length, currentPosition.plus(Vec.of(0,cubeSize,0)), this.shapes.scene_box, this.materials.grass_ground);
-	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes.scene_box, this.materials.grass_ground);
+	currentPosition = draw_vertical_wall(context, program_state, -(depth-1), currentPosition.minus(Vec.of(cubeSize,0,0)), this.shapes.scene_box, this.materials.brick_ground);
+	currentPosition = draw_flat_ground(context, program_state, width, currentPosition.plus(Vec.of(0,-(depth-1)*cubeSize,0)), this.shapes.scene_box, this.materials.brick_ground);
+	currentPosition = draw_vertical_wall(context, program_state, depth+1, currentPosition, this.shapes.scene_box, this.materials.brick_ground);
+	currentPosition = draw_flat_ground(context, program_state, length, currentPosition.plus(Vec.of(0,cubeSize,0)), this.shapes.scene_box, this.materials.brick_ground);
+	currentPosition = draw_flat_ground(context, program_state, length, currentPosition, this.shapes.scene_box, this.materials.brick_ground);
 	//up and down plank
-	//TODO: edit back to t/2
 	var plank1Position = -4*Math.sin(t) - 1;
 	currentPosition = draw_plank(context, program_state, 2, currentPosition.minus(Vec.of(0,plank1Position*cubeSize,0)), this.shapes, this.materials, true);
 	currentPosition = currentPosition.plus(Vec.of(0,plank1Position*cubeSize,0))
-	// this.shapes.plank.update_position_override(currentPosition.plus(Vec.of(cubeSize,0,0)));
-  	// this.shapes.plank.draw(context, program_state, this.materials.wood);
-	currentPosition = draw_flat_ground(context, program_state, length, currentPosition.plus(Vec.of(length*cubeSize, 5*cubeSize,0)), this.shapes.scene_box, this.materials.grass_ground);
+	currentPosition = draw_flat_ground(context, program_state, length, currentPosition.plus(Vec.of(length*cubeSize, 5*cubeSize,0)), this.shapes.scene_box, this.materials.brick_ground);
 	//left and right plank
-	//TODO: edit back to t/2
 	var plank2Position = -2*Math.sin(t) - 1;
 	currentPosition = draw_plank(context, program_state, 0, currentPosition.minus(Vec.of(plank2Position*cubeSize,0,0)), this.shapes, this.materials, false);
 	currentPosition = currentPosition.plus(Vec.of(plank2Position*cubeSize,0,0))
 
-	//------------LEVEL2: Sokoban--------------
+	//------------LEVEL2: Boss Shadow: AI2--------------
 	let length1 = 11, length2 = 4, length3 = length1 - length2;
 	var tempPos;
 	//main way
 	tempPos = currentPosition.plus(Vec.of(5*cubeSize,0,0));
-	currentPosition = draw_flat_ground(context, program_state, length1, currentPosition.plus(Vec.of(5*cubeSize,0,0)), this.shapes.scene_box, this.materials.grass_ground);
+	currentPosition = draw_flat_ground(context, program_state, length1, currentPosition.plus(Vec.of(5*cubeSize,0,0)), this.shapes.scene_box, this.materials.brick_ground);
 
 	//interactive box 3
-	//TODO: push to array??
 	if(this.shapes.AI.visible && currentRPIndex < level2StartingPointIndex)
 		tempPos = draw_vertical_wall(context, program_state, 4, tempPos.plus(Vec.of((length3)*cubeSize,cubeSize,0)), this.shapes.scene_box, this.materials.wooden_box);
 
 	//down1
-	tempPos = currentPosition.plus(Vec.of(-length3*cubeSize,0,cubeSize));
-	currentPosition = draw_flat_ground(context, program_state, length2, currentPosition.plus(Vec.of(-length3*cubeSize,0,cubeSize)), this.shapes.scene_box, this.materials.grass_ground);
-//	tempPos = draw_flat_ground(context, program_state, 0, tempPos.plus(Vec.of(0,cubeSize,0)), this.shapes.scene_box, this.materials.sokoban_wall);
-	//interactive box 4
-	//TODO: push to array??
-	// tempPos = draw_flat_ground(context, program_state, 0, tempPos.plus(Vec.of(3*cubeSize,cubeSize,0)), this.shapes.interactive_box4, this.materials.wooden_box);
+	currentPosition = draw_flat_ground(context, program_state, length2, currentPosition.plus(Vec.of(-length3*cubeSize,0,cubeSize)), this.shapes.scene_box, this.materials.brick_ground);
 
 	//down2
-	tempPos = currentPosition.plus(Vec.of(-length2*cubeSize,0,cubeSize));
-	currentPosition = draw_flat_ground(context, program_state, length2, currentPosition.plus(Vec.of(-length2*cubeSize,0,cubeSize)), this.shapes.scene_box, this.materials.grass_ground);
-//	tempPos = draw_flat_ground(context, program_state, length2, tempPos.plus(Vec.of(0,cubeSize,0)), this.shapes.scene_box, this.materials.sokoban_wall);
+	currentPosition = draw_flat_ground(context, program_state, length2, currentPosition.plus(Vec.of(-length2*cubeSize,0,cubeSize)), this.shapes.scene_box, this.materials.brick_ground);
 
 	//up1
-	tempPos = currentPosition.plus(Vec.of(-length2*cubeSize,0,-3*cubeSize));
-	currentPosition = draw_flat_ground(context, program_state, length2, currentPosition.plus(Vec.of(-length2*cubeSize,0,-3*cubeSize)), this.shapes.scene_box, this.materials.grass_ground);
-//	tempPos = draw_flat_ground(context, program_state, 0, tempPos.plus(Vec.of(0,cubeSize,0)), this.shapes.scene_box, this.materials.sokoban_wall);
-	//interactive box 5
-	//TODO: push to array??
-	// tempPos = draw_flat_ground(context, program_state, 0, tempPos.plus(Vec.of(3*cubeSize,cubeSize,0)), this.shapes.interactive_box5, this.materials.wooden_box);
+	currentPosition = draw_flat_ground(context, program_state, length2, currentPosition.plus(Vec.of(-length2*cubeSize,0,-3*cubeSize)), this.shapes.scene_box, this.materials.brick_ground);
 
 	//up2
-	tempPos = currentPosition.plus(Vec.of(-length2*cubeSize,0,-cubeSize));
-	currentPosition = draw_flat_ground(context, program_state, length2, currentPosition.plus(Vec.of(-length2*cubeSize,0,-cubeSize)), this.shapes.scene_box, this.materials.grass_ground);
-//	tempPos = draw_flat_ground(context, program_state, 2, tempPos.plus(Vec.of(0,cubeSize,0)), this.shapes.scene_box, this.materials.sokoban_wall);
-//	tempPos = draw_flat_ground(context, program_state, 0, tempPos.plus(Vec.of(2*cubeSize,0,0)), this.shapes.scene_box, this.materials.sokoban_wall);
+	currentPosition = draw_flat_ground(context, program_state, length2, currentPosition.plus(Vec.of(-length2*cubeSize,0,-cubeSize)), this.shapes.scene_box, this.materials.brick_ground);
 
 	//continue main way
-	currentPosition = draw_flat_ground(context, program_state, length1, currentPosition.plus(Vec.of(0,0,2*cubeSize)), this.shapes.scene_box, this.materials.grass_ground);
+	currentPosition = draw_flat_ground(context, program_state, length1, currentPosition.plus(Vec.of(0,0,2*cubeSize)), this.shapes.scene_box, this.materials.brick_ground);
 
 	//flag
 	if(currentRPIndex == revivePoints.length - 1)
@@ -1516,8 +1488,6 @@ function check_for_coin_collection(shapes)
 
       for(i = 0; i < this.shapes.mario.bullets_transform.length; i++)
       {
-		 //console.log(bullets_transform[i]);
-		// console.log(this.shapes.AI.position);
       	 var x = this.shapes.mario.bullets_transform[i][0][3];
       	 var y = this.shapes.mario.bullets_transform[i][1][3];
       	 var z = this.shapes.mario.bullets_transform[i][2][3];
@@ -1534,14 +1504,11 @@ function check_for_coin_collection(shapes)
       	 {
       	 	this.shapes.AI.visible = false;
 			deathTimeAI = t;
-      	 	//console.log(i);
       	 }
 
        	 if( Math.abs(x - mx2) <= 0.1 && this.shapes.AI2.visible && Math.abs(y - my2) <= 1)
        	 {
        	 	this.shapes.AI2.visible = false;
- 			//deathTimeAI = t;
-       	 	//console.log(i);
        	 }
       }
 
@@ -1557,32 +1524,25 @@ function check_for_coin_collection(shapes)
 		if(pos[0] > currentPoint[0])
 			currentRPIndex = i;
 	}
-//TODO: change name
-function MarioRevive(character)
-{
-	character.jumpStart = false;
-  	character.update_position_override(revivePoints[currentRPIndex]);
-}
 
 	//death detection for Mario's Position
 	if(pos[1] < -30)
 	{
-		MarioRevive(this.shapes.mario);
+		characterRevive(this.shapes.mario);
 		deathTImeMario = t;
 	}
-	//detection: death casuing by AI
+	//death detection: casuing by AI
 	var posAI = this.shapes.AI.position;
 	var posAI2 =  this.shapes.AI2.position;
-	//console.log(posAI);
 	if(this.shapes.AI.visible && Math.abs(posAI[0] - pos[0]) < 1 && Math.abs(posAI[1] - pos[1]) < 1 && t - deathTImeMario > 3)
 	{
 		deathTImeMario = t;
-		MarioRevive(this.shapes.mario);
+		characterRevive(this.shapes.mario);
 	}
 	if(this.shapes.AI2.visible && Math.abs(posAI2[0] - pos[0]) < 1 && Math.abs(posAI2[1] - pos[1]) < 1 && t - deathTImeMario > 3)
 	{
 		deathTImeMario = t;
-		MarioRevive(this.shapes.mario);
+		characterRevive(this.shapes.mario);
 	}
 
 	//update current Revive Point for AI
@@ -1593,10 +1553,8 @@ function MarioRevive(character)
 			currentRPIndex = i;
 	}
 	//AI revive
-	// console.log(t);
-	// console.log(deathTime);
 	if(!this.shapes.AI.visible && t - deathTimeAI > 5){
-		MarioRevive(this.shapes.AI);
+		characterRevive(this.shapes.AI);
 		this.shapes.AI.visible = true;
 	}
 
@@ -1614,12 +1572,11 @@ function MarioRevive(character)
 		this.shapes.AI.draw(context, program_state, this.materials.plastic);
 	}
 
-      // this.shapes.mario.draw(context, program_state, this.materials.plastic.override( yellow ));
       //draw mario
       this.shapes.mario.draw(context, program_state, this.materials.plastic);
 	  //default
       this.camera_teleporter.cameras.push( Mat4.inverse(this.shapes.mario.transform_position.times(Mat4.rotation(0 ,[1,0,0])).times(Mat4.translation([ 0,0, 20])) ));
-	  //
+	  //look down
       this.camera_teleporter.cameras.push( Mat4.inverse(this.shapes.mario.transform_position.times(Mat4.rotation(-Math.PI/2 ,[1,0,0])).times(Mat4.translation([ 0,0, 20])) ));
 
       // ***** END TEST SCENE *****
@@ -1680,9 +1637,7 @@ class Camera_Teleporter extends Scene
 
 const Planar_Star = defs.Planar_Star =
 class Planar_Star extends Shape
-{                                 // **Planar_Star** defines a 2D five-pointed star shape.  The star's inner
-                                  // radius is 4, and its outer radius is 7.  This means the complete star
-                                  // fits inside a 14 by 14 sqaure, and is centered at the origin.
+{
   constructor()
     { super( "position", "normal", "texture_coord" );
 
@@ -1761,18 +1716,12 @@ class Black_Hole_Shader extends Shader         // Simple "procedural" texture sh
       }
   shared_glsl_code()            // ********* SHARED CODE, INCLUDED IN BOTH SHADERS *********
     {
-                  // TODO (#EC 1c):  For both shaders, declare a varying vec2 to pass a texture coordinate between
-                  // your shaders.  Also make sure both shaders have an animation_time input (a uniform).
       return `precision mediump float;
 
       `;
     }
   vertex_glsl_code()           // ********* VERTEX SHADER *********
     {
-                          // TODO (#EC 1d,e):  Create the final "gl_Position" value of each vertex based on a displacement
-                          // function.  Also pass your texture coordinate to the next shader.  As inputs,
-                          // you have the current vertex's stored position and texture coord, animation time,
-                          // and the final product of the projection, camera, and model matrices.
       return this.shared_glsl_code() + `
 
         void main()
@@ -1782,9 +1731,6 @@ class Black_Hole_Shader extends Shader         // Simple "procedural" texture sh
     }
   fragment_glsl_code()           // ********* FRAGMENT SHADER *********
     {
-                          // TODO (#EC 1f):  Using the input UV texture coordinates and animation time,
-                          // calculate a color that makes moving waves as V increases.  Store
-                          // the result in gl_FragColor.
       return this.shared_glsl_code() + `
         void main()
         {
@@ -1798,9 +1744,6 @@ const Sun_Shader = defs.Sun_Shader =
 class Sun_Shader extends Shader
 { update_GPU( context, gpu_addresses, program_state, model_transform, material )
     {
-                      // TODO (#EC 2): Pass the same information to the shader as for EC part 1.  Additionally
-                      // pass material.color to the shader.
-
         const [ P, C, M ] = [ program_state.projection_transform, program_state.camera_inverse, model_transform ],
                       PCM = P.times( C ).times( M );
         context.uniformMatrix4fv( gpu_addresses.projection_camera_model_transform, false, Mat.flatten_2D_to_1D( PCM.transposed() ) );
@@ -1809,8 +1752,6 @@ class Sun_Shader extends Shader
 
 
     }
-                                // TODO (#EC 2):  Complete the shaders, displacing the input sphere's vertices as
-                                // a fireball effect and coloring fragments according to displacement.
 
   shared_glsl_code()            // ********* SHARED CODE, INCLUDED IN BOTH SHADERS *********
     { return `precision mediump float;
