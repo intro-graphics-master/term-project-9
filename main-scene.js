@@ -29,13 +29,14 @@ var mario_pos;
 //reviving structure
 var revivePoints = [];
 //TODO: edit back to 0
-var currentRPIndex = 3;
+var currentRPIndex = 4;
 //store riving points
 //TODO: EDIT POINTS
 revivePoints.push(Vec.of(-17, 20, 0));
-revivePoints.push(Vec.of(0, 20, 0));
-revivePoints.push(Vec.of(10, 20, 0));
+revivePoints.push(Vec.of(-1, 20, 0));
+revivePoints.push(Vec.of(14, 20, 0));
 revivePoints.push(Vec.of(95, 20, 0));
+revivePoints.push(Vec.of(113, 20, 0));
 
 class physics_component
 {
@@ -1068,7 +1069,6 @@ class Movement_Controls extends Scene
 
 
       //program_state.set_camera( Mat4.inverse(this.shapes.mario.transform_position.times(Mat4.rotation(0 ,[1,0,0])).times(Mat4.translation([ 0,0, 20]))  ) );
-	  //-----draw scene----//
 // 	 const unscaled = model_transform.copy();
 // 	 var model_transform_square = model_transform.times(Mat4.translation(Vec.of(-15, -6, 0)));
 function draw_flat_ground (context, program_state, length, currentPos, shape, material)
@@ -1256,6 +1256,7 @@ function check_for_coin_collection(shapes)
 	}
 }
 
+	  //-----START DRAWING----//
 	const cubeSize = 2;
 	var length = 3;
 	var currentPosition = Vec.of(-17, -6, 0); //starting position of ground
@@ -1349,39 +1350,41 @@ function check_for_coin_collection(shapes)
 	let length1 = 11, length2 = 4, length3 = length1 - length2;
 	var tempPos;
 	//main way
-
 	tempPos = currentPosition.plus(Vec.of(5*cubeSize,0,0));
 	currentPosition = draw_flat_ground(context, program_state, length1, currentPosition.plus(Vec.of(5*cubeSize,0,0)), this.shapes.scene_box, this.materials.grass_ground);
+
 	//interactive box 3
 	//TODO: push to array??
-	tempPos = draw_flat_ground(context, program_state, 0, tempPos.plus(Vec.of((length3+1)*cubeSize,cubeSize,0)), this.shapes.interactive_box3, this.materials.wooden_box);
+	tempPos = draw_vertical_wall(context, program_state, 4, tempPos.plus(Vec.of((length3)*cubeSize,cubeSize,0)), this.shapes.scene_box, this.materials.wooden_box);
 
 	//down1
 	tempPos = currentPosition.plus(Vec.of(-length3*cubeSize,0,cubeSize));
 	currentPosition = draw_flat_ground(context, program_state, length2, currentPosition.plus(Vec.of(-length3*cubeSize,0,cubeSize)), this.shapes.scene_box, this.materials.grass_ground);
-	tempPos = draw_flat_ground(context, program_state, 0, tempPos.plus(Vec.of(0,cubeSize,0)), this.shapes.scene_box, this.materials.sokoban_wall);
+//	tempPos = draw_flat_ground(context, program_state, 0, tempPos.plus(Vec.of(0,cubeSize,0)), this.shapes.scene_box, this.materials.sokoban_wall);
 	//interactive box 4
 	//TODO: push to array??
-	tempPos = draw_flat_ground(context, program_state, 0, tempPos.plus(Vec.of(3*cubeSize,0,0)), this.shapes.interactive_box4, this.materials.wooden_box);
+	// tempPos = draw_flat_ground(context, program_state, 0, tempPos.plus(Vec.of(3*cubeSize,cubeSize,0)), this.shapes.interactive_box4, this.materials.wooden_box);
 
 	//down2
 	tempPos = currentPosition.plus(Vec.of(-length2*cubeSize,0,cubeSize));
 	currentPosition = draw_flat_ground(context, program_state, length2, currentPosition.plus(Vec.of(-length2*cubeSize,0,cubeSize)), this.shapes.scene_box, this.materials.grass_ground);
-	tempPos = draw_flat_ground(context, program_state, length2, tempPos.plus(Vec.of(0,cubeSize,0)), this.shapes.scene_box, this.materials.sokoban_wall);
+//	tempPos = draw_flat_ground(context, program_state, length2, tempPos.plus(Vec.of(0,cubeSize,0)), this.shapes.scene_box, this.materials.sokoban_wall);
 
 	//up1
 	tempPos = currentPosition.plus(Vec.of(-length2*cubeSize,0,-3*cubeSize));
 	currentPosition = draw_flat_ground(context, program_state, length2, currentPosition.plus(Vec.of(-length2*cubeSize,0,-3*cubeSize)), this.shapes.scene_box, this.materials.grass_ground);
-	tempPos = draw_flat_ground(context, program_state, 0, tempPos.plus(Vec.of(0,cubeSize,0)), this.shapes.scene_box, this.materials.sokoban_wall);
+//	tempPos = draw_flat_ground(context, program_state, 0, tempPos.plus(Vec.of(0,cubeSize,0)), this.shapes.scene_box, this.materials.sokoban_wall);
 	//interactive box 5
 	//TODO: push to array??
-	tempPos = draw_flat_ground(context, program_state, 0, tempPos.plus(Vec.of(3*cubeSize,0,0)), this.shapes.interactive_box5, this.materials.wooden_box);
+	// tempPos = draw_flat_ground(context, program_state, 0, tempPos.plus(Vec.of(3*cubeSize,cubeSize,0)), this.shapes.interactive_box5, this.materials.wooden_box);
 
 	//up2
 	tempPos = currentPosition.plus(Vec.of(-length2*cubeSize,0,-cubeSize));
 	currentPosition = draw_flat_ground(context, program_state, length2, currentPosition.plus(Vec.of(-length2*cubeSize,0,-cubeSize)), this.shapes.scene_box, this.materials.grass_ground);
-	tempPos = draw_flat_ground(context, program_state, 2, tempPos.plus(Vec.of(0,cubeSize,0)), this.shapes.scene_box, this.materials.sokoban_wall);
-	tempPos = draw_flat_ground(context, program_state, 0, tempPos.plus(Vec.of(2*cubeSize,0,0)), this.shapes.scene_box, this.materials.sokoban_wall);
+//	tempPos = draw_flat_ground(context, program_state, 2, tempPos.plus(Vec.of(0,cubeSize,0)), this.shapes.scene_box, this.materials.sokoban_wall);
+//	tempPos = draw_flat_ground(context, program_state, 0, tempPos.plus(Vec.of(2*cubeSize,0,0)), this.shapes.scene_box, this.materials.sokoban_wall);
+	//continue main way
+	currentPosition = draw_flat_ground(context, program_state, length1, currentPosition.plus(Vec.of(0,0,2*cubeSize)), this.shapes.scene_box, this.materials.grass_ground);
 
 
 	if(frame == 0 )
@@ -1449,12 +1452,20 @@ function check_for_coin_collection(shapes)
 		if(pos[0] > currentPoint[0])
 			currentRPIndex = i;
 	}
-	//death detection
+
+function MarioRevive(mario)
+{
+	mario.jumpStart = false;
+  	mario.update_position_override(revivePoints[currentRPIndex]);
+}
+
+	//death detection for Mario's Position
 	if(pos[1] < -30)
-	{
-		this.shapes.mario.jumpStart = false;
-	  	this.shapes.mario.update_position_override(revivePoints[currentRPIndex]);
-	}
+		MarioRevive(this.shapes.mario);
+	//detection: death casuing by AI
+	var posAI = this.shapes.AI.position;
+	if(Math.abs(posAI[0] - pos[0]) < 1 && Math.abs(posAI[1] - pos[1]) < 1)
+		MarioRevive(this.shapes.mario);
 
 	this.shapes.AI.randomMove();
 	this.shapes.AI.draw(context, program_state, this.materials.plastic);
