@@ -29,14 +29,21 @@ var mario_pos;
 //reviving structure
 var revivePoints = [];
 //TODO: edit back to 0
-var currentRPIndex = 1;
+var currentRPIndex = 3;
 //store riving points
 //TODO: EDIT POINTS
+//0:
 revivePoints.push(Vec.of(-17, 20, 0));
+//1:
 revivePoints.push(Vec.of(-1, 20, 0));
+//2:
 revivePoints.push(Vec.of(14, 20, 0));
-revivePoints.push(Vec.of(95, 20, 0));
+//3: starting point of level2
+revivePoints.push(Vec.of(103, 20, 0));
+//4: after "box tower"
 revivePoints.push(Vec.of(113, 20, 0));
+//5: flag
+revivePoints.push(Vec.of(132, 20, 0));
 
 class physics_component
 {
@@ -1413,9 +1420,13 @@ function check_for_coin_collection(shapes)
 	currentPosition = draw_flat_ground(context, program_state, length1, currentPosition.plus(Vec.of(0,0,2*cubeSize)), this.shapes.scene_box, this.materials.grass_ground);
 
 	//flag
-// 	console.log(currentPosition);
-// 	this.shapes.flag.draw(context, program_state, currentPosition, this.materials.plastic.override(red));
-// 	this.shapes.flagrest.draw(context, program_state, currentPosition, this.materials.plastic.override(white));
+	//console.log(currentPosition);
+	if(currentRPIndex == revivePoints.length - 1)
+		this.shapes.flag.draw(context, program_state, model_transform.times(Mat4.translation(currentPosition.plus(Vec.of(1.2,2*cubeSize,0)))), this.materials.plastic.override(red));
+	else
+		this.shapes.flag.draw(context, program_state, model_transform.times(Mat4.translation(currentPosition.plus(Vec.of(1.2,cubeSize,0)))), this.materials.plastic.override(red));
+
+ 	this.shapes.flagrest.draw(context, program_state, model_transform.times(Mat4.translation(currentPosition.plus(Vec.of(0,cubeSize,0))).times(Mat4.scale(Vec.of(2,2,2)))), this.materials.plastic.override(white));
 
 	if(frame == 0 )
 	{
@@ -1503,10 +1514,10 @@ function check_for_coin_collection(shapes)
 			currentRPIndex = i;
 	}
 
-function MarioRevive(mario)
+function MarioRevive(character)
 {
-	mario.jumpStart = false;
-  	mario.update_position_override(revivePoints[currentRPIndex]);
+	character.jumpStart = false;
+  	character.update_position_override(revivePoints[currentRPIndex]);
 }
 
 	//death detection for Mario's Position
