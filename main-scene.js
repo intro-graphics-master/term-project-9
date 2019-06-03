@@ -23,13 +23,14 @@ var frame = 0;
 var bullet_material;
 var delta;
 var mario_pos;
-
+var deathTimeAI = -1;
+var deathTImeMario = -1;
 //TODO: implement score calculation
  var coinScore = 0;
 //reviving structure
 var revivePoints = [];
 //TODO: edit back to 0
-var currentRPIndex = 2;
+var currentRPIndex = 0;
 //store riving points
 //TODO: EDIT POINTS
 //0:
@@ -45,6 +46,7 @@ revivePoints.push(Vec.of(103, 20, 0));//starting point of level2
 revivePoints.push(Vec.of(113, 20, 0));//after "box tower"
 //5:
 revivePoints.push(Vec.of(132, 20, 0));//flag
+const appearingPosAI2 = Vec.of(111, 20, 0);
 
 class physics_component
 {
@@ -471,7 +473,7 @@ class mario extends physics_component
       	//new Subdivision_Sphere( 6 );
 
       	this.bullet_material = bullet_material;
-
+		this.speed_modifier = 1;
 	}
 
 	shoot()
@@ -513,7 +515,7 @@ class mario extends physics_component
     {
 
         this.rotation = Vec.of(0,Math.PI/2.0,0);
-        var tempPosition = this.position.plus(Vec.of(0.1,0.1*Math.tan(this.ground_angle),0));
+        var tempPosition = this.position.plus(Vec.of(0.1*this.speed_modifier,0.1*Math.tan(this.ground_angle)*this.speed_modifier,0*this.speed_modifier));
         var tempGround = -10000;
 
 	   		//this.position[0] = this.ground;
@@ -563,7 +565,7 @@ class mario extends physics_component
     {
 
       	this.rotation = Vec.of(0,-Math.PI/2.0,0);
-   		var tempPosition = this.position.plus(Vec.of(-0.1,-0.1*Math.tan(this.ground_angle),0));
+   		var tempPosition = this.position.plus(Vec.of(-0.1*this.speed_modifier,-0.1*Math.tan(this.ground_angle)*this.speed_modifier,0));
         var tempGround = -10000;
 
 	   		//this.position[0] = this.ground;
@@ -793,22 +795,23 @@ class mario extends physics_component
 
 		      for (i = 0 ; i < this.bullets.length; i++)
 		      {
+		      	this.bullets[i].draw(context, program_state, this.bullets_transform[i].times(Mat4.translation([0,0,0])), bullet_material);
 
-		      	this.bullets[i].draw(context, program_state, this.bullets_transform[i].times(Mat4.translation([2,0,0])), bullet_material);
+		      	// this.bullets[i].draw(context, program_state, this.bullets_transform[i].times(Mat4.translation([2,0,0])), bullet_material);
 		      	this.bullets_transform[i] = this.bullets_transform[i].times(Mat4.translation([0.1*this.bullet_speed[i],0,0]));
 
 		      }
 		      this.compute_next();
 
-		      this.ClearFrame++;
-		      if(this.ClearFrame % 200 == 0)
-		      {
-
-		      	this.ClearFrame = 1;
-		      	this.bullets_transform =[];
-		      	this.bullets = [];
-		      	this.bullet_speed=[];
-		      }
+//		      this.ClearFrame++;
+		      // if(this.ClearFrame % 200 == 0)
+		      // {
+			  //
+		      // 	this.ClearFrame = 1;
+		      // 	this.bullets_transform =[];
+		      // 	this.bullets = [];
+		      // 	this.bullet_speed=[];
+		      // }
 
 
 
@@ -821,10 +824,11 @@ class AI extends mario
 	constructor()
 	{
 		super();
+		this.position = Vec.of(-17,20,0);
 		this.tempPosition = this.position;
 		this.lastMove = "";
 		this.wait_frame = 0;
-
+		this.speed_modifier = 0.6;
 	}
 
 	randomMove()
@@ -942,6 +946,7 @@ class Movement_Controls extends Scene
 					"interactive_box5":new pushable_box(10, "cube"),
 					"plank":new physics_component(100, "cube"),
 					"AI": new AI(10, "mario"),
+					"AI2": new AI(10, "mario"),
 					//flag
 					"flag": new Shape_From_File ( "assets/flag.obj" ),
 					"flagrest": new Shape_From_File ("assets/flagrest.obj")
@@ -1007,6 +1012,7 @@ class Movement_Controls extends Scene
       this.shoot = false;
       this.shot_count = 0;
       this.jump = 0;
+	  this.camera_option = 0;
 
       this.apply_impulse = 0;
       this.star_matrices = [];
@@ -1029,6 +1035,8 @@ class Movement_Controls extends Scene
       this.key_triggered_button("jump", [" "],  () => {this.jump += 1; } , '#'+Math.random().toString(9).slice(-6) );
       this.new_line();
 	  this.key_triggered_button("push", ["f"],  () => {this.push = true; } , '#'+Math.random().toString(9).slice(-6),  );
+	   this.new_line();
+ 	  this.key_triggered_button("switch camera view", ["z"],  () => {this.camera_option = 1- this.camera_option; } , '#'+Math.random().toString(9).slice(-6),  );
 
     }
 
@@ -1058,6 +1066,9 @@ class Movement_Controls extends Scene
 //  			var startLookatMat4 = Mat4.orthographic().look_at( Vec.of( 0,0,20 ), Vec.of( 12,5,0 ), Vec.of( 0,1,0 ));
 //          	program_state.set_camera( startLookatMat4 );
           program_state.set_camera( Mat4.look_at( Vec.of( 0,10,20 ), Vec.of( 0,0,0 ), Vec.of( 0,1,0 ) ) );
+          // program_state.set_camera( Mat4.inverse(this.shapes.mario.transform_position.times(Mat4.rotation(0 ,[1,0,0])).times(Mat4.translation([ 0,0, 20])) ));
+
+
           this.initial_camera_location = program_state.camera_inverse;
           program_state.projection_transform = Mat4.perspective( Math.PI/4, context.width/context.height, 1, 200 );
         }
@@ -1437,7 +1448,10 @@ function check_for_coin_collection(shapes)
 
 	//flag
 	if(currentRPIndex == revivePoints.length - 1)
+	{
 		this.shapes.flag.draw(context, program_state, model_transform.times(Mat4.translation(currentPosition.plus(Vec.of(1.2,2*cubeSize,0)))), this.materials.plastic.override(red));
+		this.shapes.AI.visible = false;
+	}
 	else
 		this.shapes.flag.draw(context, program_state, model_transform.times(Mat4.translation(currentPosition.plus(Vec.of(1.2,cubeSize,0)))), this.materials.plastic.override(red));
 
@@ -1502,19 +1516,33 @@ function check_for_coin_collection(shapes)
 
       for(i = 0; i < this.shapes.mario.bullets_transform.length; i++)
       {
-      	 var x = this.shapes.mario.bullets_transform[i][3][0]+2;
-      	 var y = this.shapes.mario.bullets_transform[i][3][1];
-      	 var z = this.shapes.mario.bullets_transform[i][3][2];
+		 //console.log(bullets_transform[i]);
+		// console.log(this.shapes.AI.position);
+      	 var x = this.shapes.mario.bullets_transform[i][0][3];
+      	 var y = this.shapes.mario.bullets_transform[i][1][3];
+      	 var z = this.shapes.mario.bullets_transform[i][2][3];
 
       	 var mx = this.shapes.AI.position[0];
       	 var my = this.shapes.AI.position[1];
       	 var mz = this.shapes.AI.position[2];
 
-      	 if( Math.abs(x - mx) <= 0.1 )
+		var mx2 = this.shapes.AI2.position[0];
+		var my2 = this.shapes.AI2.position[1];
+		var mz2 = this.shapes.AI2.position[2];
+
+      	 if( Math.abs(x - mx) <= 0.1 && this.shapes.AI.visible && Math.abs(y - my) <= 1)
       	 {
       	 	this.shapes.AI.visible = false;
-      	 	console.log(i);
+			deathTimeAI = t;
+      	 	//console.log(i);
       	 }
+
+       	 if( Math.abs(x - mx2) <= 0.1 && this.shapes.AI2.visible && Math.abs(y - my2) <= 1)
+       	 {
+       	 	this.shapes.AI2.visible = false;
+ 			//deathTimeAI = t;
+       	 	//console.log(i);
+       	 }
       }
 
 
@@ -1538,15 +1566,24 @@ function MarioRevive(character)
 
 	//death detection for Mario's Position
 	if(pos[1] < -30)
+	{
 		MarioRevive(this.shapes.mario);
+		deathTImeMario = t;
+	}
 	//detection: death casuing by AI
 	var posAI = this.shapes.AI.position;
-	if(this.shapes.AI.visible && Math.abs(posAI[0] - pos[0]) < 1 && Math.abs(posAI[1] - pos[1]) < 1)
+	var posAI2 =  this.shapes.AI2.position;
+	//console.log(posAI);
+	if(this.shapes.AI.visible && Math.abs(posAI[0] - pos[0]) < 1 && Math.abs(posAI[1] - pos[1]) < 1 && t - deathTImeMario > 3)
+	{
+		deathTImeMario = t;
 		MarioRevive(this.shapes.mario);
-	
-	var diff = Math.abs(posAI[0] - pos[0]) + Math.abs(posAI[1] - pos[1]) + Math.abs(posAI[2] - pos[2]);
-	if(diff > 30)
-		MarioRevive(this.shapes.AI);
+	}
+	if(this.shapes.AI2.visible && Math.abs(posAI2[0] - pos[0]) < 1 && Math.abs(posAI2[1] - pos[1]) < 1 && t - deathTImeMario > 3)
+	{
+		deathTImeMario = t;
+		MarioRevive(this.shapes.mario);
+	}
 
 	//update current Revive Point for AI
 	for (var i = currentRPIndex; i < revivePoints.length; i++)
@@ -1555,28 +1592,44 @@ function MarioRevive(character)
 		if(this.shapes.AI.position[0] > currentPoint[0])
 			currentRPIndex = i;
 	}
-
-
-	if(!this.shapes.AI.visible){
+	//AI revive
+	// console.log(t);
+	// console.log(deathTime);
+	if(!this.shapes.AI.visible && t - deathTimeAI > 5){
 		MarioRevive(this.shapes.AI);
 		this.shapes.AI.visible = true;
 	}
 
-	
+	if(frame == 0)
+		this.shapes.AI2.update_position_override(appearingPosAI2);
+	//draw AI2 or AI1
+	if(currentRPIndex >= level2StartingPointIndex)
+	{
+		this.shapes.AI2.randomMove();
+		this.shapes.AI2.draw(context, program_state, this.materials.plastic);
+	}
+	else
+	{
+		this.shapes.AI.randomMove();
+		this.shapes.AI.draw(context, program_state, this.materials.plastic);
+	}
 
-	this.shapes.AI.randomMove();
-	this.shapes.AI.draw(context, program_state, this.materials.plastic);
       // this.shapes.mario.draw(context, program_state, this.materials.plastic.override( yellow ));
       //draw mario
       this.shapes.mario.draw(context, program_state, this.materials.plastic);
-
+	  //default
       this.camera_teleporter.cameras.push( Mat4.inverse(this.shapes.mario.transform_position.times(Mat4.rotation(0 ,[1,0,0])).times(Mat4.translation([ 0,0, 20])) ));
+	  //
       this.camera_teleporter.cameras.push( Mat4.inverse(this.shapes.mario.transform_position.times(Mat4.rotation(-Math.PI/2 ,[1,0,0])).times(Mat4.translation([ 0,0, 20])) ));
 
       // ***** END TEST SCENE *****
 
 	frame=1;
 	mario_pos = this.shapes.mario.position;
+	if(this.camera_option == 0)
+		program_state.set_camera(Mat4.inverse(this.shapes.mario.transform_position.times(Mat4.translation([0,0,20]))));
+	else
+		program_state.set_camera(Mat4.inverse(this.shapes.mario.transform_position.times(Mat4.rotation(-Math.PI/2, [1,0,0])).times(Mat4.translation([0,0,20]))));
 
     }
 }
