@@ -1065,7 +1065,7 @@ class Movement_Controls extends Scene
                     // perspective() are field of view, aspect ratio, and distances to the near plane and far plane.
 //  			var startLookatMat4 = Mat4.orthographic().look_at( Vec.of( 0,0,20 ), Vec.of( 12,5,0 ), Vec.of( 0,1,0 ));
 //          	program_state.set_camera( startLookatMat4 );
-          program_state.set_camera( Mat4.look_at( Vec.of( 0,10,20 ), Vec.of( 0,0,0 ), Vec.of( 0,1,0 ) ) );
+          //program_state.set_camera( Mat4.look_at( Vec.of( 0,10,20 ), Vec.of( 0,0,0 ), Vec.of( 0,1,0 ) ) );
           // program_state.set_camera( Mat4.inverse(this.shapes.mario.transform_position.times(Mat4.rotation(0 ,[1,0,0])).times(Mat4.translation([ 0,0, 20])) ));
 
 
