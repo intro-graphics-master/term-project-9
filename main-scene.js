@@ -29,7 +29,7 @@ var mario_pos;
 //reviving structure
 var revivePoints = [];
 //TODO: edit back to 0
-var currentRPIndex = 3;
+var currentRPIndex = 2;
 //store riving points
 //TODO: EDIT POINTS
 //0:
@@ -37,13 +37,14 @@ revivePoints.push(Vec.of(-17, 20, 0));
 //1:
 revivePoints.push(Vec.of(-1, 20, 0));
 //2:
-revivePoints.push(Vec.of(14, 20, 0));
-//3: starting point of level2
-revivePoints.push(Vec.of(103, 20, 0));
-//4: after "box tower"
-revivePoints.push(Vec.of(113, 20, 0));
-//5: flag
-revivePoints.push(Vec.of(132, 20, 0));
+revivePoints.push(Vec.of(95, 20, 0)); //just after horizontally moving plank
+//3:
+const level2StartingPointIndex = 3;
+revivePoints.push(Vec.of(103, 20, 0));//starting point of level2
+//4:
+revivePoints.push(Vec.of(113, 20, 0));//after "box tower"
+//5:
+revivePoints.push(Vec.of(132, 20, 0));//flag
 
 class physics_component
 {
@@ -1388,7 +1389,8 @@ function check_for_coin_collection(shapes)
 
 	//interactive box 3
 	//TODO: push to array??
-	tempPos = draw_vertical_wall(context, program_state, 4, tempPos.plus(Vec.of((length3)*cubeSize,cubeSize,0)), this.shapes.scene_box, this.materials.wooden_box);
+	if(this.shapes.AI.visible && currentRPIndex < level2StartingPointIndex)
+		tempPos = draw_vertical_wall(context, program_state, 4, tempPos.plus(Vec.of((length3)*cubeSize,cubeSize,0)), this.shapes.scene_box, this.materials.wooden_box);
 
 	//down1
 	tempPos = currentPosition.plus(Vec.of(-length3*cubeSize,0,cubeSize));
@@ -1416,11 +1418,11 @@ function check_for_coin_collection(shapes)
 	currentPosition = draw_flat_ground(context, program_state, length2, currentPosition.plus(Vec.of(-length2*cubeSize,0,-cubeSize)), this.shapes.scene_box, this.materials.grass_ground);
 //	tempPos = draw_flat_ground(context, program_state, 2, tempPos.plus(Vec.of(0,cubeSize,0)), this.shapes.scene_box, this.materials.sokoban_wall);
 //	tempPos = draw_flat_ground(context, program_state, 0, tempPos.plus(Vec.of(2*cubeSize,0,0)), this.shapes.scene_box, this.materials.sokoban_wall);
+
 	//continue main way
 	currentPosition = draw_flat_ground(context, program_state, length1, currentPosition.plus(Vec.of(0,0,2*cubeSize)), this.shapes.scene_box, this.materials.grass_ground);
 
 	//flag
-	//console.log(currentPosition);
 	if(currentRPIndex == revivePoints.length - 1)
 		this.shapes.flag.draw(context, program_state, model_transform.times(Mat4.translation(currentPosition.plus(Vec.of(1.2,2*cubeSize,0)))), this.materials.plastic.override(red));
 	else
@@ -1513,7 +1515,7 @@ function check_for_coin_collection(shapes)
 		if(pos[0] > currentPoint[0])
 			currentRPIndex = i;
 	}
-
+//TODO: change name
 function MarioRevive(character)
 {
 	character.jumpStart = false;
