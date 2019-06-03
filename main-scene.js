@@ -29,7 +29,7 @@ var mario_pos;
 //reviving structure
 var revivePoints = [];
 //TODO: edit back to 0
-var currentRPIndex = 4;
+var currentRPIndex = 1;
 //store riving points
 //TODO: EDIT POINTS
 revivePoints.push(Vec.of(-17, 20, 0));
@@ -803,7 +803,7 @@ class AI extends mario
 		this.tempPosition = this.position;
 		this.lastMove = "";
 		this.wait_frame = 0;
-		
+
 	}
 
 	randomMove()
@@ -856,7 +856,7 @@ class AI extends mario
 
 	draw(context, program_state, material)
 	{
-		
+
 		if(this.visible)
 		{
 			this.update_transform();
@@ -872,8 +872,8 @@ class AI extends mario
 			this.wait_frame--;
 		else
 		{
-			
-			
+
+
 			if(!this.visible)
 			{
 				this.position = mario_pos;
@@ -920,8 +920,10 @@ class Movement_Controls extends Scene
 					"interactive_box4":new pushable_box(10, "cube"),
 					"interactive_box5":new pushable_box(10, "cube"),
 					"plank":new physics_component(100, "cube"),
-					"AI": new AI(10, "mario")
-
+					"AI": new AI(10, "mario"),
+					//flag
+					"flag": new Shape_From_File ( "assets/flag.obj" ),
+					"flagrest": new Shape_From_File ("assets/flagrest.obj")
                       };
 
       const phong_shader      = new defs.Phong_Shader  (2);
@@ -1410,6 +1412,10 @@ function check_for_coin_collection(shapes)
 	//continue main way
 	currentPosition = draw_flat_ground(context, program_state, length1, currentPosition.plus(Vec.of(0,0,2*cubeSize)), this.shapes.scene_box, this.materials.grass_ground);
 
+	//flag
+// 	console.log(currentPosition);
+// 	this.shapes.flag.draw(context, program_state, currentPosition, this.materials.plastic.override(red));
+// 	this.shapes.flagrest.draw(context, program_state, currentPosition, this.materials.plastic.override(white));
 
 	if(frame == 0 )
 	{
@@ -1467,7 +1473,7 @@ function check_for_coin_collection(shapes)
       	this.shot_count = 1;
       }
 
-      
+
       for(i = 0; i < this.shapes.mario.bullets_transform.length; i++)
       {
       	 var x = this.shapes.mario.bullets_transform[i][3][0];
@@ -1508,7 +1514,7 @@ function MarioRevive(mario)
 		MarioRevive(this.shapes.mario);
 	//detection: death casuing by AI
 	var posAI = this.shapes.AI.position;
-	if(Math.abs(posAI[0] - pos[0]) < 1 && Math.abs(posAI[1] - pos[1]) < 1)
+	if(this.shapes.AI.visible && Math.abs(posAI[0] - pos[0]) < 1 && Math.abs(posAI[1] - pos[1]) < 1)
 		MarioRevive(this.shapes.mario);
 
 	this.shapes.AI.randomMove();
