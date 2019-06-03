@@ -802,6 +802,8 @@ class AI extends mario
 		super();
 		this.tempPosition = this.position;
 		this.lastMove = "";
+		this.wait_frame = 0;
+		
 	}
 
 	randomMove()
@@ -854,11 +856,33 @@ class AI extends mario
 
 	draw(context, program_state, material)
 	{
+		
 		if(this.visible)
 		{
 			this.update_transform();
 			this.object_type.draw(context, program_state, this.transforms, material.override(yellow));
 			this.compute_next();
+		}
+		else
+		{
+			this.wait_frame = 30;
+		}
+
+		if(this.wait_frame > 0)
+			this.wait_frame--;
+		else
+		{
+			
+			
+			if(!this.visible)
+			{
+				this.position = mario_pos;
+				this.position[0] = mario_pos[0]+2;
+				this.position[1] = mario_pos[1] + 4;
+			}
+
+
+			this.visible = true;
 		}
 	}
 
@@ -1433,6 +1457,8 @@ function check_for_coin_collection(shapes)
       	this.shapes.mario.push();
       }
 
+      //checkout bullet collision
+
       if(this.shoot)
       {
       	if( this.shot_count == 0)
@@ -1440,6 +1466,24 @@ function check_for_coin_collection(shapes)
 
       	this.shot_count = 1;
       }
+
+      
+      for(i = 0; i < this.shapes.mario.bullets_transform.length; i++)
+      {
+      	 var x = this.shapes.mario.bullets_transform[i][3][0];
+      	 var y = this.shapes.mario.bullets_transform[i][3][1];
+      	 var z = this.shapes.mario.bullets_transform[i][3][2];
+
+      	 var mx = this.shapes.AI.position[0];
+      	 var my = this.shapes.AI.position[1];
+      	 var mz = this.shapes.AI.position[2];
+
+      	 if( Math.abs(x - mx) <= 0.1 )
+      	 {
+      	 	this.shapes.AI.visible = false;
+      	 }
+      }
+
 
       var pos = this.shapes.mario.position;
       var factor = 1;
