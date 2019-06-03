@@ -458,6 +458,8 @@ class mario extends physics_component
       	this.bullets =[];
       	this.bullets_transform= [];
       	this.bullet_speed = [];
+      	this.bullets_position=[];
+      	this.ClearFrame= 1;
       	//new Subdivision_Sphere( 6 );
 
       	this.bullet_material = bullet_material;
@@ -473,6 +475,7 @@ class mario extends physics_component
 			this.bullets_transform.shift();
 			this.bullets.shift();
 			this.bullet_speed.shift();
+
 		}
 
 		this.update_transform();
@@ -784,10 +787,20 @@ class mario extends physics_component
 		      {
 
 		      	this.bullets[i].draw(context, program_state, this.bullets_transform[i].times(Mat4.translation([2,0,0])), bullet_material);
-		      	this.bullets_transform[i] = this.bullets_transform[i].times(Mat4.translation([0.2*this.bullet_speed[i],0,0]));
+		      	this.bullets_transform[i] = this.bullets_transform[i].times(Mat4.translation([0.1*this.bullet_speed[i],0,0]));
 
 		      }
 		      this.compute_next();
+
+		      this.ClearFrame++;
+		      if(this.ClearFrame % 200 == 0)
+		      {
+
+		      	this.ClearFrame = 1;
+		      	this.bullets_transform =[];
+		      	this.bullets = [];
+		      	this.bullet_speed=[];
+		      }
 
 
 
@@ -863,27 +876,27 @@ class AI extends mario
 			this.object_type.draw(context, program_state, this.transforms, material.override(yellow));
 			this.compute_next();
 		}
-		else
-		{
-			this.wait_frame = 30;
-		}
+		// else
+		// {
+		// 	this.wait_frame = 30;
+		// }
 
-		if(this.wait_frame > 0)
-			this.wait_frame--;
-		else
-		{
-
-
-			if(!this.visible)
-			{
-				this.position = mario_pos;
-				this.position[0] = mario_pos[0]+2;
-				this.position[1] = mario_pos[1] + 4;
-			}
+		// if(this.wait_frame > 0)
+		// 	this.wait_frame--;
+		// else
+		// {
 
 
-			this.visible = true;
-		}
+		// 	if(!this.visible)
+		// 	{
+		// 		this.position = mario_pos;
+		// 		this.position[0] = mario_pos[0]+2;
+		// 		this.position[1] = mario_pos[1] + 4;
+		// 	}
+
+
+		// 	this.visible = true;
+		// }
 	}
 
 }
@@ -1476,7 +1489,7 @@ function check_for_coin_collection(shapes)
 
       for(i = 0; i < this.shapes.mario.bullets_transform.length; i++)
       {
-      	 var x = this.shapes.mario.bullets_transform[i][3][0];
+      	 var x = this.shapes.mario.bullets_transform[i][3][0]+2;
       	 var y = this.shapes.mario.bullets_transform[i][3][1];
       	 var z = this.shapes.mario.bullets_transform[i][3][2];
 
@@ -1487,6 +1500,7 @@ function check_for_coin_collection(shapes)
       	 if( Math.abs(x - mx) <= 0.1 )
       	 {
       	 	this.shapes.AI.visible = false;
+      	 	console.log(i);
       	 }
       }
 
@@ -1516,6 +1530,26 @@ function MarioRevive(mario)
 	var posAI = this.shapes.AI.position;
 	if(this.shapes.AI.visible && Math.abs(posAI[0] - pos[0]) < 1 && Math.abs(posAI[1] - pos[1]) < 1)
 		MarioRevive(this.shapes.mario);
+	
+	var diff = Math.abs(posAI[0] - pos[0]) + Math.abs(posAI[1] - pos[1]) + Math.abs(posAI[2] - pos[2]);
+	if(diff > 30)
+		MarioRevive(this.shapes.AI);
+
+	//update current Revive Point for AI
+	for (var i = currentRPIndex; i < revivePoints.length; i++)
+	{
+		let currentPoint = revivePoints[i];
+		if(this.shapes.AI.position[0] > currentPoint[0])
+			currentRPIndex = i;
+	}
+
+
+	if(!this.shapes.AI.visible){
+		MarioRevive(this.shapes.AI);
+		this.shapes.AI.visible = true;
+	}
+
+	
 
 	this.shapes.AI.randomMove();
 	this.shapes.AI.draw(context, program_state, this.materials.plastic);
